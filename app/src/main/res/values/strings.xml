@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Skytte</string>
+
+    <string name="tab_sessions">Skjuttillfällen</string>
+    <string name="tab_weapons">Vapen</string>
+    <string name="tab_ammunition">Ammunition</string>
+
+    <string name="add_session">Nytt skjuttillfälle</string>
+    <string name="add_weapon">Nytt vapen</string>
+    <string name="add_ammunition">Ny ammunition</string>
+
+    <string name="empty_sessions">Inga skjuttillfällen ännu. Tryck + för att lägga till.</string>
+    <string name="empty_weapons">Inga vapen tillagda ännu.</string>
+    <string name="empty_ammunition">Ingen ammunition tillagd ännu.</string>
+
+    <string name="date">Datum</string>
+    <string name="location">Plats</string>
+    <string name="weapon">Vapen</string>
+    <string name="ammunition">Ammunition</string>
+    <string name="ammo_count">Antal skott</string>
+    <string name="shooting_type">Typ av skytte</string>
+    <string name="name">Namn</string>
+    <string name="caliber">Kaliber</string>
+    <string name="notes">Anteckningar</string>
+
+    <string name="save">Spara</string>
+    <string name="cancel">Avbryt</string>
+    <string name="delete">Ta bort</string>
+    <string name="edit">Redigera</string>
+    <string name="back">Tillbaka</string>
+    <string name="select">Välj…</string>
+    <string name="none">Ingen</string>
+</resources>
