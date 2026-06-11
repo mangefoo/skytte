@@ -15,6 +15,9 @@ interface SessionDao {
     @Query("SELECT * FROM sessions ORDER BY date DESC, id DESC")
     fun observeAll(): Flow<List<SessionWithRefs>>
 
+    @Query("SELECT * FROM sessions ORDER BY date DESC, id DESC")
+    suspend fun getAll(): List<Session>
+
     @Transaction
     @Query("SELECT * FROM sessions WHERE id = :id")
     suspend fun byId(id: Long): SessionWithRefs?

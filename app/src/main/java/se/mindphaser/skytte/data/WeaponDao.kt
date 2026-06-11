@@ -13,6 +13,9 @@ interface WeaponDao {
     @Query("SELECT * FROM weapons ORDER BY name COLLATE NOCASE")
     fun observeAll(): Flow<List<Weapon>>
 
+    @Query("SELECT * FROM weapons ORDER BY id")
+    suspend fun getAll(): List<Weapon>
+
     @Query("SELECT * FROM weapons WHERE id = :id")
     suspend fun byId(id: Long): Weapon?
 

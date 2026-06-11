@@ -14,24 +14,34 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.data.SessionWithRefs
+import se.mindphaser.skytte.data.exportBackup
+import se.mindphaser.skytte.data.shareBackup
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -46,8 +56,36 @@ fun SessionListScreen(
 ) {
     val sessions by vm.sessions.collectAsState(initial = emptyList())
 
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val exportFailed = stringResource(R.string.export_failed)
+    val shareTitle = stringResource(R.string.export_share)
+
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_sessions)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.tab_sessions)) },
+                actions = {
+                    IconButton(onClick = {
+                        scope.launch {
+                            try {
+                                val uri = exportBackup(context)
+                                shareBackup(context, uri, shareTitle)
+                            } catch (e: Exception) {
+                                snackbarHostState.showSnackbar(exportFailed)
+                            }
+                        }
+                    }) {
+                        Icon(
+                            Icons.Default.Share,
+                            contentDescription = stringResource(R.string.export)
+                        )
+                    }
+                }
+            )
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAdd) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_session))

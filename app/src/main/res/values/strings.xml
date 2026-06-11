@@ -31,4 +31,8 @@
     <string name="back">Tillbaka</string>
     <string name="select">Välj…</string>
     <string name="none">Ingen</string>
+
+    <string name="export">Exportera</string>
+    <string name="export_share">Dela export</string>
+    <string name="export_failed">Exporten misslyckades</string>
 </resources>
