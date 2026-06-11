@@ -72,7 +72,7 @@ fun WeaponsScreen(vm: WeaponsViewModel = viewModel(factory = WeaponsViewModel.Fa
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(items = weapons, key = { it.id }) { w ->
-                    Card(modifier = Modifier.clickable { editing = w }) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { editing = w }) {
                         Column(Modifier.padding(16.dp)) {
                             Text(w.name, style = MaterialTheme.typography.titleMedium)
                             val details = listOfNotNull(

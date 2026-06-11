@@ -72,7 +72,7 @@ fun AmmunitionScreen(vm: AmmunitionViewModel = viewModel(factory = AmmunitionVie
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(items = items, key = { it.id }) { a ->
-                    Card(modifier = Modifier.clickable { editing = a }) {
+                    Card(modifier = Modifier.fillMaxWidth().clickable { editing = a }) {
                         Column(Modifier.padding(16.dp)) {
                             Text(a.name, style = MaterialTheme.typography.titleMedium)
                             val details = listOfNotNull(
