@@ -40,6 +40,7 @@ jobs:
           # (a $, backtick or \ in an inlined ${{ secrets.* }} would otherwise be mangled).
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
         run: |
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
           size=$(wc -c < "$RUNNER_TEMP/release.keystore")
@@ -49,6 +50,14 @@ jobs:
           #  - "keystore password was incorrect"           => RELEASE_KEYSTORE_PASSWORD is wrong
           if ! keytool -list -keystore "$RUNNER_TEMP/release.keystore" -storepass "$KEYSTORE_PASSWORD"; then
             echo "::error::keytool could not open the keystore — see its message above."
+            exit 1
+          fi
+          if [ -z "$KEY_ALIAS" ]; then
+            echo "::error::RELEASE_KEY_ALIAS is empty or unset — set it (in the Release environment) to one of the aliases listed above."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null; then
+            echo "::error::Alias '$KEY_ALIAS' was not found in the keystore (see the alias list above). Fix RELEASE_KEY_ALIAS."
             exit 1
           fi
 
