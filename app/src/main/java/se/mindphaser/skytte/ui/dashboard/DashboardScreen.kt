@@ -20,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import se.mindphaser.skytte.R
+import se.mindphaser.skytte.ui.SkytteTopBar
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.ceil
@@ -47,11 +47,19 @@ private val monthLabelFormatter = DateTimeFormatter.ofPattern("MMM", swedish)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(vm: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory)) {
+fun DashboardScreen(
+    onOpenSettings: () -> Unit,
+    vm: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory)
+) {
     val stats by vm.stats.collectAsState(initial = DashboardStats.EMPTY)
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_dashboard)) }) }
+        topBar = {
+            SkytteTopBar(
+                title = stringResource(R.string.tab_dashboard),
+                onOpenSettings = onOpenSettings
+            )
+        }
     ) { padding ->
         if (stats.totalSessions == 0) {
             Box(

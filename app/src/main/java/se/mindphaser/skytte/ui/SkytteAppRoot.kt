@@ -1,5 +1,7 @@
 package se.mindphaser.skytte.ui
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -68,6 +70,8 @@ fun SkytteAppRoot() {
     val showBottomBar = tabs.any { tab -> currentDest?.hierarchy?.any { it.route == tab.route } == true }
 
     Scaffold(
+        // The screens' own top bars own the status-bar inset; only reserve space for the bottom nav.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
@@ -93,9 +97,13 @@ fun SkytteAppRoot() {
         NavHost(
             navController = nav,
             startDestination = Routes.DASHBOARD,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding)
         ) {
-            composable(Routes.DASHBOARD) { DashboardScreen() }
+            composable(Routes.DASHBOARD) {
+                DashboardScreen(onOpenSettings = { nav.navigate(Routes.SETTINGS) })
+            }
             composable(Routes.SESSIONS) {
                 SessionListScreen(
                     onAdd = { nav.navigate(Routes.sessionEdit()) },
@@ -103,8 +111,12 @@ fun SkytteAppRoot() {
                     onOpenSettings = { nav.navigate(Routes.SETTINGS) }
                 )
             }
-            composable(Routes.WEAPONS) { WeaponsScreen() }
-            composable(Routes.AMMUNITION) { AmmunitionScreen() }
+            composable(Routes.WEAPONS) {
+                WeaponsScreen(onOpenSettings = { nav.navigate(Routes.SETTINGS) })
+            }
+            composable(Routes.AMMUNITION) {
+                AmmunitionScreen(onOpenSettings = { nav.navigate(Routes.SETTINGS) })
+            }
             composable(Routes.SETTINGS) { SettingsScreen(onBack = { nav.popBackStack() }) }
             composable(
                 route = Routes.SESSION_EDIT_PATTERN,

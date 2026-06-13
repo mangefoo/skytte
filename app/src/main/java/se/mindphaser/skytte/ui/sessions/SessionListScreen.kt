@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +42,7 @@ import se.mindphaser.skytte.R
 import se.mindphaser.skytte.data.SessionWithRefs
 import se.mindphaser.skytte.data.exportBackup
 import se.mindphaser.skytte.data.shareBackup
+import se.mindphaser.skytte.ui.SkytteTopBar
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -67,8 +66,9 @@ fun SessionListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.tab_sessions)) },
+            SkytteTopBar(
+                title = stringResource(R.string.tab_sessions),
+                onOpenSettings = onOpenSettings,
                 actions = {
                     IconButton(onClick = {
                         scope.launch {
@@ -83,12 +83,6 @@ fun SessionListScreen(
                         Icon(
                             Icons.Default.Share,
                             contentDescription = stringResource(R.string.export)
-                        )
-                    }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.tab_settings)
                         )
                     }
                 }

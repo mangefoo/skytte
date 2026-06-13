@@ -26,7 +26,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,15 +39,24 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.data.Ammunition
+import se.mindphaser.skytte.ui.SkytteTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AmmunitionScreen(vm: AmmunitionViewModel = viewModel(factory = AmmunitionViewModel.Factory)) {
+fun AmmunitionScreen(
+    onOpenSettings: () -> Unit,
+    vm: AmmunitionViewModel = viewModel(factory = AmmunitionViewModel.Factory)
+) {
     val items by vm.items.collectAsState(initial = emptyList())
     var editing by remember { mutableStateOf<Ammunition?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.tab_ammunition)) }) },
+        topBar = {
+            SkytteTopBar(
+                title = stringResource(R.string.tab_ammunition),
+                onOpenSettings = onOpenSettings
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { editing = Ammunition(name = "") }) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_ammunition))
