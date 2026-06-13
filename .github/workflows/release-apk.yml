@@ -35,11 +35,22 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode and verify release keystore
+        env:
+          # Inject as env vars so the shell never re-interprets special chars in the password
+          # (a $, backtick or \ in an inlined ${{ secrets.* }} would otherwise be mangled).
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
-          keytool -list -keystore "$RUNNER_TEMP/release.keystore" \
-            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" > /dev/null \
-            || { echo "::error::Keystore could not be opened. Check that RELEASE_KEYSTORE_BASE64 is the complete, single-line base64 of the keystore and that RELEASE_KEYSTORE_PASSWORD is correct."; exit 1; }
+          printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          size=$(wc -c < "$RUNNER_TEMP/release.keystore")
+          echo "Decoded keystore size: ${size} bytes (a real keystore is typically ~2000-3000)"
+          # Show keytool's actual message so failures are diagnosable:
+          #  - "Invalid keystore format" / "Tag number..." => RELEASE_KEYSTORE_BASE64 is incomplete/garbled
+          #  - "keystore password was incorrect"           => RELEASE_KEYSTORE_PASSWORD is wrong
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.keystore" -storepass "$KEYSTORE_PASSWORD"; then
+            echo "::error::keytool could not open the keystore — see its message above."
+            exit 1
+          fi
 
       - name: Build release APK
         env:
@@ -61,7 +72,9 @@ jobs:
           if-no-files-found: error
 
       - name: Write service-account key
-        run: printf '%s' '${{ secrets.GDRIVE_SA_KEY }}' > "$RUNNER_TEMP/sa.json"
+        env:
+          GDRIVE_SA_KEY: ${{ secrets.GDRIVE_SA_KEY }}
+        run: printf '%s' "$GDRIVE_SA_KEY" > "$RUNNER_TEMP/sa.json"
 
       - name: Upload to Google Drive
         env:
