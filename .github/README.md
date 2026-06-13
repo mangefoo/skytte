@@ -16,9 +16,17 @@ The workflow does nothing useful until the secrets below exist.
 
 ---
 
-## Required repository secrets
+## Required secrets
 
-Add these under **Settings → Secrets and variables → Actions → New repository secret**.
+These live in an **environment** named `Release`, which the workflow references via
+`environment: Release` on its job. Create it under **Settings → Environments → New
+environment** (name it exactly `Release`), then add the secrets there with **Add environment
+secret**. Optionally restrict the environment's deployment branches to `main` and/or require a
+reviewer.
+
+> The job only sees these secrets because it declares `environment: Release`. Without that line
+> (or if the environment name doesn't match) the secrets resolve to empty strings at runtime —
+> which shows up as a corrupt keystore (`Tag number over 30 is not supported`).
 
 | Secret | What it is |
 | --- | --- |
