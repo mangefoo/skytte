@@ -16,26 +16,36 @@ The workflow does nothing useful until the secrets below exist.
 
 ---
 
-## Required secrets
+## Required secrets and variables
 
 These live in an **environment** named `Release`, which the workflow references via
 `environment: Release` on its job. Create it under **Settings → Environments → New
-environment** (name it exactly `Release`), then add the secrets there with **Add environment
-secret**. Optionally restrict the environment's deployment branches to `main` and/or require a
-reviewer.
+environment** (name it exactly `Release`). Add the sensitive values as **environment secrets**
+and the non-sensitive ones as **environment variables** (a Variable is read with `vars.*`, a
+Secret with `secrets.*` — they are *not* interchangeable). Optionally restrict the
+environment's deployment branches to `main` and/or require a reviewer.
 
-> The job only sees these secrets because it declares `environment: Release`. Without that line
-> (or if the environment name doesn't match) the secrets resolve to empty strings at runtime —
-> which shows up as a corrupt keystore (`Tag number over 30 is not supported`).
+> The job only sees these because it declares `environment: Release`. Without that line (or if
+> the environment name doesn't match) the references resolve to empty strings at runtime —
+> which surfaces as a corrupt keystore (`Tag number over 30 is not supported`) or an empty
+> alias (`No key with alias '' found`). Also make sure each value is in the right section:
+> something added as a **Variable** is invisible to `secrets.*`, and vice versa.
+
+Secrets (sensitive — masked in logs):
 
 | Secret | What it is |
 | --- | --- |
 | `RELEASE_KEYSTORE_BASE64` | Your release keystore, base64-encoded (see below) |
 | `RELEASE_KEYSTORE_PASSWORD` | The keystore (store) password |
-| `RELEASE_KEY_ALIAS` | The key alias inside the keystore (e.g. `skytte`) |
 | `RELEASE_KEY_PASSWORD` | The key password (often the same as the store password) |
 | `GDRIVE_SA_KEY` | The Google service-account JSON key, pasted as-is |
 | `GDRIVE_FOLDER_ID` | The ID of the Drive folder to upload into |
+
+Variables (not sensitive — stored/displayed in plaintext):
+
+| Variable | What it is |
+| --- | --- |
+| `RELEASE_KEY_ALIAS` | The key alias inside the keystore (e.g. `skytte`) |
 
 ---
 

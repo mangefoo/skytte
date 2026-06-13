@@ -40,7 +40,7 @@ jobs:
           # (a $, backtick or \ in an inlined ${{ secrets.* }} would otherwise be mangled).
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_ALIAS: ${{ vars.RELEASE_KEY_ALIAS }}   # alias is not secret -> stored as a variable
         run: |
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
           size=$(wc -c < "$RUNNER_TEMP/release.keystore")
@@ -65,7 +65,7 @@ jobs:
         env:
           RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_ALIAS: ${{ vars.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
 
