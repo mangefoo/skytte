@@ -2,9 +2,9 @@ package se.mindphaser.skytte.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.GpsFixed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -24,12 +24,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.ui.ammunition.AmmunitionScreen
+import se.mindphaser.skytte.ui.dashboard.DashboardScreen
 import se.mindphaser.skytte.ui.sessions.SessionEditScreen
 import se.mindphaser.skytte.ui.sessions.SessionListScreen
 import se.mindphaser.skytte.ui.settings.SettingsScreen
 import se.mindphaser.skytte.ui.weapons.WeaponsScreen
 
 object Routes {
+    const val DASHBOARD = "dashboard"
     const val SESSIONS = "sessions"
     const val WEAPONS = "weapons"
     const val AMMUNITION = "ammunition"
@@ -47,6 +49,9 @@ private data class TopTab(val route: String, val labelRes: Int, val icon: @Compo
 fun SkytteAppRoot() {
     val nav = rememberNavController()
     val tabs = listOf(
+        TopTab(Routes.DASHBOARD, R.string.tab_dashboard) {
+            Icon(Icons.Filled.BarChart, contentDescription = null)
+        },
         TopTab(Routes.SESSIONS, R.string.tab_sessions) {
             Icon(Icons.Outlined.GpsFixed, contentDescription = null)
         },
@@ -55,9 +60,6 @@ fun SkytteAppRoot() {
         },
         TopTab(Routes.AMMUNITION, R.string.tab_ammunition) {
             Icon(Icons.Filled.Inventory2, contentDescription = null)
-        },
-        TopTab(Routes.SETTINGS, R.string.tab_settings) {
-            Icon(Icons.Filled.Settings, contentDescription = null)
         }
     )
 
@@ -75,7 +77,7 @@ fun SkytteAppRoot() {
                             selected = selected,
                             onClick = {
                                 nav.navigate(tab.route) {
-                                    popUpTo(Routes.SESSIONS) { saveState = true }
+                                    popUpTo(Routes.DASHBOARD) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -90,18 +92,20 @@ fun SkytteAppRoot() {
     ) { padding ->
         NavHost(
             navController = nav,
-            startDestination = Routes.SESSIONS,
+            startDestination = Routes.DASHBOARD,
             modifier = Modifier.padding(padding)
         ) {
+            composable(Routes.DASHBOARD) { DashboardScreen() }
             composable(Routes.SESSIONS) {
                 SessionListScreen(
                     onAdd = { nav.navigate(Routes.sessionEdit()) },
-                    onOpen = { id -> nav.navigate(Routes.sessionEdit(id)) }
+                    onOpen = { id -> nav.navigate(Routes.sessionEdit(id)) },
+                    onOpenSettings = { nav.navigate(Routes.SETTINGS) }
                 )
             }
             composable(Routes.WEAPONS) { WeaponsScreen() }
             composable(Routes.AMMUNITION) { AmmunitionScreen() }
-            composable(Routes.SETTINGS) { SettingsScreen() }
+            composable(Routes.SETTINGS) { SettingsScreen(onBack = { nav.popBackStack() }) }
             composable(
                 route = Routes.SESSION_EDIT_PATTERN,
                 arguments = listOf(

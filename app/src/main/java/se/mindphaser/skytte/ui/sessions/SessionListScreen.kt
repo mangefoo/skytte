@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +54,7 @@ private val dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.for
 fun SessionListScreen(
     onAdd: () -> Unit,
     onOpen: (Long) -> Unit,
+    onOpenSettings: () -> Unit,
     vm: SessionListViewModel = viewModel(factory = SessionListViewModel.Factory)
 ) {
     val sessions by vm.sessions.collectAsState(initial = emptyList())
@@ -81,6 +83,12 @@ fun SessionListScreen(
                         Icon(
                             Icons.Default.Share,
                             contentDescription = stringResource(R.string.export)
+                        )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = stringResource(R.string.tab_settings)
                         )
                     }
                 }

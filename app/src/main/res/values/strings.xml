@@ -6,6 +6,19 @@
     <string name="tab_weapons">Vapen</string>
     <string name="tab_ammunition">Ammunition</string>
     <string name="tab_settings">Inställningar</string>
+    <string name="tab_dashboard">Statistik</string>
+
+    <string name="stat_shots_title">Antal skott</string>
+    <string name="stat_total">Totalt</string>
+    <string name="stat_this_year">I år</string>
+    <string name="stat_last_30_days">30 dagar</string>
+    <string name="stat_shots_unit">skott</string>
+    <string name="shots_per_weapon">Skott per vapen</string>
+    <string name="shots_per_ammo">Skott per ammunition</string>
+    <string name="shots_per_month">Skott</string>
+    <string name="sessions_per_month">Skjuttillfällen</string>
+    <string name="unknown_label">Okänt</string>
+    <string name="empty_dashboard">Ingen statistik ännu. Lägg till skjuttillfällen för att se data.</string>
 
     <string name="dark_mode">Mörkt läge</string>
 
