@@ -5,6 +5,9 @@
     <string name="tab_sessions">Skjuttillfällen</string>
     <string name="tab_weapons">Vapen</string>
     <string name="tab_ammunition">Ammunition</string>
+    <string name="tab_settings">Inställningar</string>
+
+    <string name="dark_mode">Mörkt läge</string>
 
     <string name="add_session">Nytt skjuttillfälle</string>
     <string name="add_weapon">Nytt vapen</string>

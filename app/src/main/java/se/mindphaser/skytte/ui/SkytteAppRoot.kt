@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.GpsFixed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -25,12 +26,14 @@ import se.mindphaser.skytte.R
 import se.mindphaser.skytte.ui.ammunition.AmmunitionScreen
 import se.mindphaser.skytte.ui.sessions.SessionEditScreen
 import se.mindphaser.skytte.ui.sessions.SessionListScreen
+import se.mindphaser.skytte.ui.settings.SettingsScreen
 import se.mindphaser.skytte.ui.weapons.WeaponsScreen
 
 object Routes {
     const val SESSIONS = "sessions"
     const val WEAPONS = "weapons"
     const val AMMUNITION = "ammunition"
+    const val SETTINGS = "settings"
     const val SESSION_EDIT = "session_edit"
     const val SESSION_EDIT_ARG = "sessionId"
     const val SESSION_EDIT_PATTERN = "$SESSION_EDIT?$SESSION_EDIT_ARG={$SESSION_EDIT_ARG}"
@@ -52,6 +55,9 @@ fun SkytteAppRoot() {
         },
         TopTab(Routes.AMMUNITION, R.string.tab_ammunition) {
             Icon(Icons.Filled.Inventory2, contentDescription = null)
+        },
+        TopTab(Routes.SETTINGS, R.string.tab_settings) {
+            Icon(Icons.Filled.Settings, contentDescription = null)
         }
     )
 
@@ -95,6 +101,7 @@ fun SkytteAppRoot() {
             }
             composable(Routes.WEAPONS) { WeaponsScreen() }
             composable(Routes.AMMUNITION) { AmmunitionScreen() }
+            composable(Routes.SETTINGS) { SettingsScreen() }
             composable(
                 route = Routes.SESSION_EDIT_PATTERN,
                 arguments = listOf(
