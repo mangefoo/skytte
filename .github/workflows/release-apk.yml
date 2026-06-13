@@ -33,8 +33,12 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode release keystore
-        run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+      - name: Decode and verify release keystore
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          keytool -list -keystore "$RUNNER_TEMP/release.keystore" \
+            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" > /dev/null \
+            || { echo "::error::Keystore could not be opened. Check that RELEASE_KEYSTORE_BASE64 is the complete, single-line base64 of the keystore and that RELEASE_KEYSTORE_PASSWORD is correct."; exit 1; }
 
       - name: Build release APK
         env:

@@ -44,14 +44,22 @@ keytool -genkeypair -v \
   -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-Then base64-encode it and copy the result into the `RELEASE_KEYSTORE_BASE64` secret:
+Then base64-encode it **to a single line** and put the result in `RELEASE_KEYSTORE_BASE64`.
+Encode into a file and copy from the file — do **not** select wrapped base64 out of the
+terminal, as dropped/added characters corrupt the keystore (`Tag number over 30 is not
+supported` at build time):
 
 ```bash
-# macOS
-base64 -i release.keystore | pbcopy
+# Encode to one line (works on macOS and Linux):
+openssl base64 -A -in release.keystore -out keystore.b64
 
-# Linux
-base64 -w0 release.keystore   # copy the printed output
+# Verify it round-trips to a readable keystore BEFORE pasting:
+base64 -d keystore.b64 > /tmp/check.keystore
+keytool -list -keystore /tmp/check.keystore      # should list your 'skytte' alias
+
+# Copy the file contents into the RELEASE_KEYSTORE_BASE64 secret:
+#   macOS:  pbcopy < keystore.b64
+#   Linux:  xclip -selection clipboard < keystore.b64   (or open keystore.b64 and copy all)
 ```
 
 Set the other three secrets to match what you entered above:
