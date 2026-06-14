@@ -14,6 +14,13 @@ After **every** change, check whether docs need updating and update them in the 
 
 If a change doesn't affect any doc, that's fine — but verify, don't assume.
 
+## Commits
+
+Commit messages are **subject + body only**. Never add AI-attribution lines or any similar
+"AI additions" — no `Co-Authored-By:` trailers (e.g. naming Claude/an assistant), no
+"Generated with …" / "🤖" footers, no tool advertising. Write the message as a human would,
+describing the change and why.
+
 ## Project overview
 
 - Android app, **Kotlin + Jetpack Compose (Material 3)**, MVVM (ViewModel + Kotlin `Flow`).
