@@ -4,6 +4,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -95,62 +98,70 @@ fun SettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            SettingsSectionHeader(stringResource(R.string.settings_section_appearance))
-
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
             ) {
-                Text(
-                    text = stringResource(R.string.dark_mode),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
+                SettingsSectionHeader(stringResource(R.string.settings_section_appearance))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.dark_mode),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = darkMode,
+                        onCheckedChange = { themePreferences.setDarkMode(it) }
+                    )
+                }
+
+                SettingsSectionHeader(stringResource(R.string.settings_section_data))
+
+                SettingsActionRow(
+                    icon = Icons.Default.Upload,
+                    label = stringResource(R.string.export),
+                    onClick = {
+                        val repos = app.currentRepositories ?: return@SettingsActionRow
+                        scope.launch {
+                            runCatching { shareBackup(context, exportBackup(context, repos), shareTitle) }
+                                .onFailure { snackbarHostState.showSnackbar(exportFailed) }
+                        }
+                    }
                 )
-                Switch(
-                    checked = darkMode,
-                    onCheckedChange = { themePreferences.setDarkMode(it) }
+
+                SettingsActionRow(
+                    icon = Icons.Default.Download,
+                    label = stringResource(R.string.import_data),
+                    onClick = { importLauncher.launch(arrayOf("application/json")) }
+                )
+
+                SettingsSectionHeader(stringResource(R.string.settings_section_about))
+
+                Text(
+                    text = stringResource(
+                        R.string.app_version,
+                        BuildConfig.VERSION_NAME,
+                        BuildConfig.BUILD_DATE
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
                 )
             }
 
-            SettingsSectionHeader(stringResource(R.string.settings_section_data))
-
-            SettingsActionRow(
-                icon = Icons.Default.Upload,
-                label = stringResource(R.string.export),
-                onClick = {
-                    val repos = app.currentRepositories ?: return@SettingsActionRow
-                    scope.launch {
-                        runCatching { shareBackup(context, exportBackup(context, repos), shareTitle) }
-                            .onFailure { snackbarHostState.showSnackbar(exportFailed) }
-                    }
-                }
-            )
-
-            SettingsActionRow(
-                icon = Icons.Default.Download,
-                label = stringResource(R.string.import_data),
-                onClick = { importLauncher.launch(arrayOf("application/json")) }
-            )
-
-            SettingsSectionHeader(stringResource(R.string.settings_section_about))
+            HorizontalDivider()
 
             SettingsActionRow(
                 icon = Icons.AutoMirrored.Filled.Logout,
                 label = stringResource(R.string.sign_out),
                 onClick = { app.authManager.signOut() }
-            )
-
-            Text(
-                text = stringResource(
-                    R.string.app_version,
-                    BuildConfig.VERSION_NAME,
-                    BuildConfig.BUILD_DATE
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
             )
         }
     }
