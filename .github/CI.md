@@ -11,6 +11,7 @@ What it does, in order:
 3. Attaches the APK to the run as a workflow artifact (`release-apk`).
 4. Uploads the APK to Firebase App Distribution (via the Firebase CLI) and distributes it to your
    tester group. Testers get an email and install through the Firebase *App Tester* app.
+5. Posts a success/failure message to Slack (only if `SLACK_WEBHOOK_URL` is set).
 
 The workflow does nothing useful until the secrets/variables below exist.
 
@@ -39,6 +40,7 @@ Secrets (sensitive — masked in logs):
 | `RELEASE_KEYSTORE_PASSWORD` | The keystore (store) password |
 | `RELEASE_KEY_PASSWORD` | The key password (often the same as the store password) |
 | `FIREBASE_SERVICE_ACCOUNT` | The Firebase service-account JSON key, pasted as-is |
+| `SLACK_WEBHOOK_URL` | *(optional)* Slack Incoming Webhook URL for build notifications |
 
 Variables (not sensitive — stored/displayed in plaintext):
 
@@ -117,6 +119,17 @@ The service account lives in the Google Cloud Console
    contents (the whole `{ … }` object — e.g. `pbcopy < key.json`) into the
    `FIREBASE_SERVICE_ACCOUNT` secret. The workflow points the Firebase CLI at it via
    `GOOGLE_APPLICATION_CREDENTIALS`. Treat the file as a credential and delete it afterwards.
+
+## 5. Slack notifications (optional)
+
+To get a ✅/❌ message in Slack for each release build:
+
+1. In Slack, create (or pick) an app at [api.slack.com/apps](https://api.slack.com/apps) →
+   **Incoming Webhooks** → enable → **Add New Webhook to Workspace** → choose the channel.
+2. Copy the webhook URL into the `SLACK_WEBHOOK_URL` secret (in the `Release` environment).
+
+The message includes the build id (`<run>-<sha>`), a link to the workflow run, and the commit
+message. If the secret isn't set, the workflow simply skips the notification.
 
 ---
 

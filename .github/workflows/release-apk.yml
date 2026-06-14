@@ -104,3 +104,22 @@ jobs:
             --app "$FIREBASE_APP_ID" \
             --groups "$FIREBASE_GROUPS" \
             --release-notes "Skytte ${{ steps.name.outputs.apk }} (${GITHUB_SHA::7})"
+
+      - name: Notify Slack
+        if: ${{ always() && env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          build="${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
+          if [ "$STATUS" = "success" ]; then
+            header="✅ Skytte $build distributed to Firebase App Distribution"
+          else
+            header="❌ Skytte $build — release $STATUS"
+          fi
+          text="$header"$'\n'"$RUN_URL"
+          [ -n "$COMMIT_MSG" ] && text="$text"$'\n'"$COMMIT_MSG"
+          jq -n --arg t "$text" '{text: $t}' \
+            | curl -sf -X POST -H 'Content-type: application/json' -d @- "$SLACK_WEBHOOK_URL"
