@@ -16,3 +16,6 @@ app/build
 keystore.properties
 *-sa.json
 service-account*.json
+
+# Firebase config — ships inside the APK (no real secret), but injected by CI; keep it local
+app/google-services.json

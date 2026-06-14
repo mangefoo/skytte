@@ -7,10 +7,17 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import se.mindphaser.skytte.ui.SkytteAppRoot
+import se.mindphaser.skytte.ui.auth.SignInScreen
 import se.mindphaser.skytte.ui.theme.SkytteTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +25,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val darkModePref by (application as SkytteApp).themePreferences.darkMode.collectAsState()
+            val app = application as SkytteApp
+            val darkModePref by app.themePreferences.darkMode.collectAsState()
             val darkTheme = darkModePref ?: isSystemInDarkTheme()
             DisposableEffect(darkTheme) {
                 enableEdgeToEdge(
@@ -28,7 +36,19 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
             SkytteTheme(darkTheme = darkTheme) {
-                SkytteAppRoot()
+                // Auth gate: the app is only shown once a user is signed in and their repositories
+                // are ready. Signed out → sign-in screen; signing in → brief loading spinner.
+                val uid by app.authManager.uid.collectAsState()
+                val repositories by app.repositories.collectAsState()
+                when {
+                    repositories != null -> SkytteAppRoot()
+                    uid != null -> Surface(modifier = Modifier.fillMaxSize()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    else -> SignInScreen(app.authManager)
+                }
             }
         }
     }

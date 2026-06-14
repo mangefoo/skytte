@@ -64,6 +64,16 @@ jobs:
             exit 1
           fi
 
+      - name: Write google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON is empty — the google-services plugin needs app/google-services.json to build. Set it as a secret in the Release environment (paste the file's JSON contents)."
+            exit 1
+          fi
+          printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+
       - name: Build release APK
         env:
           RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore

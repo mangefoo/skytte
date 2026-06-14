@@ -1,16 +1,16 @@
 package se.mindphaser.skytte.data
 
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 
 /**
- * Serializable snapshot of all app data. [LocalDate] values are rendered as
- * ISO-8601 strings so the JSON stays human-readable and library-independent.
- * Foreign-key ids are preserved so the file is a full backup, not just a report.
+ * Serializable snapshot of all app data. [LocalDate] values are rendered as ISO-8601 strings so the
+ * JSON stays human-readable and library-independent. Ids are Firestore document ids; foreign-key
+ * ids are preserved so the file is a full backup, not just a report. (On import, fresh ids are
+ * generated and references remapped, so the file is merged rather than clobbering existing docs.)
  */
 @Serializable
 data class BackupData(
-    val version: Int = 2,
+    val version: Int = 3,
     val exportedAt: String,
     val weapons: List<WeaponDto>,
     val ammunition: List<AmmunitionDto>,
@@ -19,7 +19,7 @@ data class BackupData(
 
 @Serializable
 data class WeaponDto(
-    val id: Long,
+    val id: String,
     val name: String,
     val caliber: String,
     val notes: String,
@@ -27,13 +27,11 @@ data class WeaponDto(
     companion object {
         fun from(weapon: Weapon) = WeaponDto(weapon.id, weapon.name, weapon.caliber, weapon.notes)
     }
-
-    fun toEntity() = Weapon(id = id, name = name, caliber = caliber, notes = notes)
 }
 
 @Serializable
 data class AmmunitionDto(
-    val id: Long,
+    val id: String,
     val name: String,
     val caliber: String,
     val notes: String,
@@ -43,19 +41,15 @@ data class AmmunitionDto(
         fun from(ammo: Ammunition) =
             AmmunitionDto(ammo.id, ammo.name, ammo.caliber, ammo.notes, ammo.costPerRound)
     }
-
-    fun toEntity() = Ammunition(
-        id = id, name = name, caliber = caliber, notes = notes, costPerRound = costPerRound
-    )
 }
 
 @Serializable
 data class SessionDto(
-    val id: Long,
+    val id: String,
     val date: String,
     val location: String,
-    val weaponId: Long?,
-    val ammunitionId: Long?,
+    val weaponId: String?,
+    val ammunitionId: String?,
     val ammoCount: Int,
     val shootingType: String,
     val fee: Double? = null,
@@ -74,16 +68,4 @@ data class SessionDto(
             feeIncludesAmmo = session.feeIncludesAmmo,
         )
     }
-
-    fun toEntity() = Session(
-        id = id,
-        date = LocalDate.parse(date),
-        location = location,
-        weaponId = weaponId,
-        ammunitionId = ammunitionId,
-        ammoCount = ammoCount,
-        shootingType = shootingType,
-        fee = fee,
-        feeIncludesAmmo = feeIncludesAmmo,
-    )
 }

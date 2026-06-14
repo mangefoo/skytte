@@ -41,7 +41,7 @@ object Routes {
     const val SESSION_EDIT = "session_edit"
     const val SESSION_EDIT_ARG = "sessionId"
     const val SESSION_EDIT_PATTERN = "$SESSION_EDIT?$SESSION_EDIT_ARG={$SESSION_EDIT_ARG}"
-    fun sessionEdit(id: Long? = null) =
+    fun sessionEdit(id: String? = null) =
         if (id == null) SESSION_EDIT else "$SESSION_EDIT?$SESSION_EDIT_ARG=$id"
 }
 
@@ -128,8 +128,7 @@ fun SkytteAppRoot() {
                     }
                 )
             ) { entry ->
-                val raw = entry.arguments?.getString(Routes.SESSION_EDIT_ARG)
-                val id = raw?.toLongOrNull()
+                val id = entry.arguments?.getString(Routes.SESSION_EDIT_ARG)
                 SessionEditScreen(
                     sessionId = id,
                     onDone = { nav.popBackStack() }

@@ -68,7 +68,7 @@ private val shootingTypeSuggestions = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionEditScreen(
-    sessionId: Long?,
+    sessionId: String?,
     onDone: () -> Unit,
     vm: SessionEditViewModel = viewModel(factory = SessionEditViewModel.Factory)
 ) {
@@ -232,9 +232,9 @@ fun SessionEditScreen(
 @Composable
 private fun ItemDropdown(
     label: String,
-    options: List<Pair<Long, String>>,
-    selectedId: Long?,
-    onSelect: (Long?) -> Unit
+    options: List<Pair<String, String>>,
+    selectedId: String?,
+    onSelect: (String?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val selectedText = options.firstOrNull { it.first == selectedId }?.second

@@ -5,10 +5,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import se.mindphaser.skytte.data.SessionDao
 import se.mindphaser.skytte.data.SessionWithRefs
+import se.mindphaser.skytte.data.repo.SessionRepository
 import se.mindphaser.skytte.data.totalCost
-import se.mindphaser.skytte.ui.database
+import se.mindphaser.skytte.ui.repositories
 import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.math.roundToInt
@@ -53,8 +53,8 @@ data class DashboardStats(
     }
 }
 
-class DashboardViewModel(dao: SessionDao) : ViewModel() {
-    val stats: Flow<DashboardStats> = dao.observeAll().map { sessions ->
+class DashboardViewModel(repo: SessionRepository) : ViewModel() {
+    val stats: Flow<DashboardStats> = repo.observeAll().map { sessions ->
         buildStats(sessions, LocalDate.now())
     }
 
@@ -62,7 +62,7 @@ class DashboardViewModel(dao: SessionDao) : ViewModel() {
         const val MONTHS_SHOWN = 12
 
         val Factory = viewModelFactory {
-            initializer { DashboardViewModel(database().sessionDao()) }
+            initializer { DashboardViewModel(repositories().sessions) }
         }
 
         fun buildStats(sessions: List<SessionWithRefs>, today: LocalDate): DashboardStats {

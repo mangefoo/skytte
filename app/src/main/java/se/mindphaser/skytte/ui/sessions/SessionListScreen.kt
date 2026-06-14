@@ -43,7 +43,7 @@ private val dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.for
 @Composable
 fun SessionListScreen(
     onAdd: () -> Unit,
-    onOpen: (Long) -> Unit,
+    onOpen: (String) -> Unit,
     onOpenSettings: () -> Unit,
     vm: SessionListViewModel = viewModel(factory = SessionListViewModel.Factory)
 ) {

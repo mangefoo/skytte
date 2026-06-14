@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +48,8 @@ import se.mindphaser.skytte.data.shareBackup
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    val themePreferences = (context.applicationContext as SkytteApp).themePreferences
+    val app = context.applicationContext as SkytteApp
+    val themePreferences = app.themePreferences
     val darkModePref by themePreferences.darkMode.collectAsState()
     val darkMode = darkModePref ?: isSystemInDarkTheme()
 
@@ -60,8 +62,9 @@ fun SettingsScreen(onBack: () -> Unit) {
         ActivityResultContracts.OpenDocument()
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
+        val repos = app.currentRepositories ?: return@rememberLauncherForActivityResult
         scope.launch {
-            val message = when (val result = importBackup(context, uri)) {
+            val message = when (val result = importBackup(context, uri, repos)) {
                 is ImportResult.Success -> context.getString(
                     R.string.import_success, result.weapons, result.ammunition, result.sessions
                 )
@@ -113,8 +116,9 @@ fun SettingsScreen(onBack: () -> Unit) {
                 icon = Icons.Default.Upload,
                 label = stringResource(R.string.export),
                 onClick = {
+                    val repos = app.currentRepositories ?: return@SettingsActionRow
                     scope.launch {
-                        runCatching { shareBackup(context, exportBackup(context), shareTitle) }
+                        runCatching { shareBackup(context, exportBackup(context, repos), shareTitle) }
                             .onFailure { snackbarHostState.showSnackbar(exportFailed) }
                     }
                 }
@@ -124,6 +128,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                 icon = Icons.Default.Download,
                 label = stringResource(R.string.import_data),
                 onClick = { importLauncher.launch(arrayOf("application/json")) }
+            )
+
+            SettingsActionRow(
+                icon = Icons.AutoMirrored.Filled.Logout,
+                label = stringResource(R.string.sign_out),
+                onClick = { app.authManager.signOut() }
             )
 
             Text(

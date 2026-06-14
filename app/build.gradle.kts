@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
 }
 
 // Build identity: versionCode from the CI run number (monotonic), versionName = semver +
@@ -89,9 +89,16 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    // Cloud storage + auth (Firestore is the source of truth; offline persistence is on by default)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.coroutines.play.services) // Task<T>.await()
+
+    // Google Sign-In via Credential Manager
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     implementation(libs.kotlinx.serialization.json)
 }

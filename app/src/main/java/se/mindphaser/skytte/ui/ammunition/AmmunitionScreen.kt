@@ -115,7 +115,7 @@ fun AmmunitionScreen(
                 vm.save(it)
                 editing = null
             },
-            onDelete = if (ammo.id != 0L) {
+            onDelete = if (ammo.id.isNotBlank()) {
                 {
                     vm.delete(ammo)
                     editing = null
@@ -143,7 +143,7 @@ private fun AmmunitionEditDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                if (initial.id == 0L) stringResource(R.string.add_ammunition)
+                if (initial.id.isBlank()) stringResource(R.string.add_ammunition)
                 else stringResource(R.string.edit)
             )
         },

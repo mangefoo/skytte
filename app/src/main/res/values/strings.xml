@@ -61,4 +61,10 @@
     <string name="import_failed">Importen misslyckades: %1$s</string>
     <string name="import_success">Import klar: %1$d vapen, %2$d ammunition, %3$d skjuttillfällen</string>
     <string name="app_version">Version %1$s · byggd %2$s</string>
+
+    <string name="sign_in_subtitle">Logga in för att synka dina data till molnet och mellan enheter.</string>
+    <string name="sign_in_google">Logga in med Google</string>
+    <string name="sign_in_failed">Inloggningen misslyckades</string>
+    <string name="sign_in_no_account">Inget Google-konto hittades på enheten. Lägg till ett konto i Inställningar och försök igen.</string>
+    <string name="sign_out">Logga ut</string>
 </resources>

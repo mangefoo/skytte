@@ -9,6 +9,10 @@ and ammunition. The UI is in Swedish.
   ammunition, round count, and shooting type.
 - **Vapen (Weapons)** — maintain a list of weapons (name, caliber, notes).
 - **Ammunition** — maintain a list of ammunition (name, caliber, notes).
+- **Cloud sync** — data is stored in **Cloud Firestore** under your Google account, so it
+  syncs across your devices and is backed up off-device. The app is **offline-first**: it
+  works fully without a connection (e.g. at the range) and syncs when back online. Sign in
+  with Google on first launch; sign out from **Inställningar** (Settings).
 - **Export & import** — back up all data (sessions, weapons, ammunition) to a JSON
   file via the system share sheet, and import a backup JSON (e.g. from Downloads)
   to merge it back in. Both live on the **Inställningar** (Settings) screen.
@@ -18,10 +22,15 @@ and ammunition. The UI is in Swedish.
 - **Language:** Kotlin 2.1.0
 - **UI:** Jetpack Compose (Material 3)
 - **Navigation:** Navigation Compose
-- **Persistence:** Room (SQLite), database file `skytte.db`
-- **Architecture:** MVVM (ViewModel + Kotlin Flow)
+- **Persistence:** Cloud Firestore (offline-first; the local cache is the on-device store)
+- **Auth:** Firebase Auth with Google Sign-In (via Credential Manager)
+- **Architecture:** MVVM (ViewModel + Kotlin Flow over Firestore snapshot listeners)
 - **Serialization:** kotlinx.serialization (JSON export/import)
 - **Build:** Gradle 8.13 with Android Gradle Plugin 8.13.2
+
+> **Firebase setup:** the app needs `app/google-services.json` (not committed) and, in the
+> Firebase console, **Firestore** enabled and **Google** enabled as an Auth provider. See
+> [`.github/CI.md`](.github/CI.md) for the build-time `GOOGLE_SERVICES_JSON` secret.
 
 ## Requirements
 
@@ -69,20 +78,26 @@ command line with `./gradlew :app:installDebug`.
 
 ```
 app/src/main/java/se/mindphaser/skytte/
-├── MainActivity.kt          # Entry point
-├── SkytteApp.kt             # Application class (holds the database)
-├── data/                    # Room entities, DAOs, database, JSON backup/export/import
-│   ├── AppDatabase.kt
-│   ├── Session.kt / Weapon.kt / Ammunition.kt
-│   ├── SessionDao.kt / WeaponDao.kt / AmmunitionDao.kt
-│   ├── Backup.kt            # Serializable backup DTOs (+ entity mappers)
+├── MainActivity.kt          # Entry point + auth gate
+├── SkytteApp.kt             # Application class (Firestore, AuthManager, per-user Repositories)
+├── auth/
+│   └── AuthManager.kt       # Firebase Auth + Google Sign-In (Credential Manager)
+├── data/                    # Domain models, Firestore repositories, JSON backup/export/import
+│   ├── Session.kt / Weapon.kt / Ammunition.kt   # plain data classes (String ids)
+│   ├── repo/Repositories.kt # Firestore-backed repositories (snapshot listeners → Flow)
+│   ├── migration/LegacyDbMigration.kt           # one-time import of old local skytte.db
+│   ├── Backup.kt            # Serializable backup DTOs
 │   ├── BackupExporter.kt    # Builds JSON, writes file, shares via FileProvider
-│   └── BackupImporter.kt    # Reads a backup JSON and merges it into the database
+│   └── BackupImporter.kt    # Reads a backup JSON and merges it into Firestore
 └── ui/                      # Jetpack Compose screens + ViewModels
     ├── SkytteAppRoot.kt     # Bottom-nav + navigation graph
+    ├── auth/SignInScreen.kt # Sign-in gate UI
     ├── dashboard/ sessions/ weapons/ ammunition/ settings/
     └── theme/
 ```
+
+Firestore rules live in [`firestore.rules`](firestore.rules) (deployed via the Firebase CLI;
+see [`firebase.json`](firebase.json)).
 
 ## Versioning
 

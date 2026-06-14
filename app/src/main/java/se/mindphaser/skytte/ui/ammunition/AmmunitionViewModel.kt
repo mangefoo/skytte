@@ -7,25 +7,23 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import se.mindphaser.skytte.data.Ammunition
-import se.mindphaser.skytte.data.AmmunitionDao
-import se.mindphaser.skytte.ui.database
+import se.mindphaser.skytte.data.repo.AmmunitionRepository
+import se.mindphaser.skytte.ui.repositories
 
-class AmmunitionViewModel(private val dao: AmmunitionDao) : ViewModel() {
-    val items: Flow<List<Ammunition>> = dao.observeAll()
+class AmmunitionViewModel(private val repo: AmmunitionRepository) : ViewModel() {
+    val items: Flow<List<Ammunition>> = repo.observeAll()
 
     fun save(ammo: Ammunition) {
-        viewModelScope.launch {
-            if (ammo.id == 0L) dao.insert(ammo) else dao.update(ammo)
-        }
+        viewModelScope.launch { repo.save(ammo) }
     }
 
     fun delete(ammo: Ammunition) {
-        viewModelScope.launch { dao.delete(ammo) }
+        viewModelScope.launch { repo.delete(ammo) }
     }
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { AmmunitionViewModel(database().ammunitionDao()) }
+            initializer { AmmunitionViewModel(repositories().ammunition) }
         }
     }
 }

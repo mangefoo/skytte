@@ -105,7 +105,7 @@ fun WeaponsScreen(
                 vm.save(updated)
                 editing = null
             },
-            onDelete = if (weapon.id != 0L) {
+            onDelete = if (weapon.id.isNotBlank()) {
                 {
                     vm.delete(weapon)
                     editing = null
@@ -130,7 +130,7 @@ private fun WeaponEditDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                if (initial.id == 0L) stringResource(R.string.add_weapon)
+                if (initial.id.isBlank()) stringResource(R.string.add_weapon)
                 else stringResource(R.string.edit)
             )
         },

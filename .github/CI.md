@@ -39,6 +39,7 @@ Secrets (sensitive — masked in logs):
 | `RELEASE_KEYSTORE_BASE64` | Your release keystore, base64-encoded (see below) |
 | `RELEASE_KEYSTORE_PASSWORD` | The keystore (store) password |
 | `RELEASE_KEY_PASSWORD` | The key password (often the same as the store password) |
+| `GOOGLE_SERVICES_JSON` | The app's `google-services.json` contents, pasted as-is (required to build) |
 | `FIREBASE_SERVICE_ACCOUNT` | The Firebase service-account JSON key, pasted as-is |
 | `SLACK_WEBHOOK_URL` | *(optional)* Slack Incoming Webhook URL for build notifications |
 
@@ -95,10 +96,17 @@ Set the other three secrets to match what you entered above:
 
 1. At [console.firebase.google.com](https://console.firebase.google.com/) create (or choose) a
    Firebase project.
-2. Add an **Android app** with package name `se.mindphaser.skytte`. You do **not** need to add
-   `google-services.json` or any SDK — distribution only needs the App ID.
+2. Add an **Android app** with package name `se.mindphaser.skytte`, then **download
+   `google-services.json`**. The app now uses Firestore + Auth, so this file is required at build
+   time (the google-services Gradle plugin fails without it). Keep it at `app/google-services.json`
+   locally (git-ignored); paste its contents into the `GOOGLE_SERVICES_JSON` secret for CI (the
+   *Write google-services.json* workflow step writes it back out before `assembleRelease`).
 3. Copy the **App ID** from **Project settings → Your apps** (format `1:NNNNNN:android:XXXX`) and
    put it in the `FIREBASE_APP_ID` variable.
+4. **Enable Firestore** (Build → Firestore Database → Native mode) and **enable Google** as a
+   sign-in provider (Build → Authentication → Sign-in method → Google). Enabling Google creates the
+   OAuth web client that the plugin exposes as `default_web_client_id` (used by `AuthManager`).
+   Deploy the security rules in `firestore.rules` with `firebase deploy --only firestore:rules`.
 
 ## 3. Enable App Distribution and a tester group
 

@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import se.mindphaser.skytte.data.repo.Repositories
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
@@ -21,18 +22,17 @@ private val json = Json {
 private val fileStampFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
 
 /**
- * Reads all data, writes it as pretty-printed JSON to a file in the cache, and
- * returns a content:// [Uri] suitable for sharing. Using the cache directory
- * means no storage permission is required.
+ * Reads all data from the user's Firestore subtree, writes it as pretty-printed JSON to a file in
+ * the cache, and returns a content:// [Uri] suitable for sharing. Using the cache directory means
+ * no storage permission is required.
  */
-suspend fun exportBackup(context: Context): Uri = withContext(Dispatchers.IO) {
-    val db = AppDatabase.get(context)
+suspend fun exportBackup(context: Context, repos: Repositories): Uri = withContext(Dispatchers.IO) {
     val now = Instant.now()
     val backup = BackupData(
         exportedAt = now.toString(),
-        weapons = db.weaponDao().getAll().map(WeaponDto::from),
-        ammunition = db.ammunitionDao().getAll().map(AmmunitionDto::from),
-        sessions = db.sessionDao().getAll().map(SessionDto::from),
+        weapons = repos.weapons.getAll().map(WeaponDto::from),
+        ammunition = repos.ammunition.getAll().map(AmmunitionDto::from),
+        sessions = repos.sessions.getAll().map(SessionDto::from),
     )
 
     val stamp = LocalDateTime.ofInstant(now, ZoneId.systemDefault()).format(fileStampFormatter)

@@ -12,24 +12,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import se.mindphaser.skytte.data.Ammunition
-import se.mindphaser.skytte.data.AmmunitionDao
 import se.mindphaser.skytte.data.Session
-import se.mindphaser.skytte.data.SessionDao
 import se.mindphaser.skytte.data.Weapon
-import se.mindphaser.skytte.data.WeaponDao
-import se.mindphaser.skytte.ui.database
+import se.mindphaser.skytte.data.repo.AmmunitionRepository
+import se.mindphaser.skytte.data.repo.SessionRepository
+import se.mindphaser.skytte.data.repo.WeaponRepository
+import se.mindphaser.skytte.ui.repositories
 import java.time.LocalDate
 
 class SessionEditViewModel(
-    private val sessionDao: SessionDao,
-    weaponDao: WeaponDao,
-    ammunitionDao: AmmunitionDao
+    private val sessionRepo: SessionRepository,
+    weaponRepo: WeaponRepository,
+    ammunitionRepo: AmmunitionRepository
 ) : ViewModel() {
 
     var date by mutableStateOf(LocalDate.now())
     var location by mutableStateOf("")
-    var weaponId: Long? by mutableStateOf(null)
-    var ammunitionId: Long? by mutableStateOf(null)
+    var weaponId: String? by mutableStateOf(null)
+    var ammunitionId: String? by mutableStateOf(null)
     var ammoCountText by mutableStateOf("")
     var shootingType by mutableStateOf("")
     var feeText by mutableStateOf("")
@@ -37,14 +37,14 @@ class SessionEditViewModel(
     var loaded by mutableStateOf(false)
         private set
 
-    private var editingId: Long? by mutableStateOf(null)
+    private var editingId: String? by mutableStateOf(null)
 
     val weapons: StateFlow<List<Weapon>> =
-        weaponDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        weaponRepo.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val ammunitionList: StateFlow<List<Ammunition>> =
-        ammunitionDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        ammunitionRepo.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    fun load(id: Long?) {
+    fun load(id: String?) {
         if (loaded) return
         editingId = id
         if (id == null) {
@@ -52,17 +52,17 @@ class SessionEditViewModel(
             return
         }
         viewModelScope.launch {
-            sessionDao.byId(id)?.let { s ->
-                date = s.session.date
-                location = s.session.location
-                weaponId = s.session.weaponId
-                ammunitionId = s.session.ammunitionId
-                ammoCountText = s.session.ammoCount.toString()
-                shootingType = s.session.shootingType
-                feeText = s.session.fee?.let {
+            sessionRepo.getSession(id)?.let { s ->
+                date = s.date
+                location = s.location
+                weaponId = s.weaponId
+                ammunitionId = s.ammunitionId
+                ammoCountText = s.ammoCount.toString()
+                shootingType = s.shootingType
+                feeText = s.fee?.let {
                     String.format(java.util.Locale.forLanguageTag("sv-SE"), "%.2f", it)
                 } ?: ""
-                feeIncludesAmmo = s.session.feeIncludesAmmo
+                feeIncludesAmmo = s.feeIncludesAmmo
             }
             loaded = true
         }
@@ -73,7 +73,7 @@ class SessionEditViewModel(
     fun save(onDone: () -> Unit) {
         viewModelScope.launch {
             val s = Session(
-                id = editingId ?: 0L,
+                id = editingId ?: "",
                 date = date,
                 location = location.trim(),
                 weaponId = weaponId,
@@ -83,7 +83,7 @@ class SessionEditViewModel(
                 fee = feeText.replace(',', '.').toDoubleOrNull(),
                 feeIncludesAmmo = feeIncludesAmmo
             )
-            if (editingId == null) sessionDao.insert(s) else sessionDao.update(s)
+            sessionRepo.save(s)
             onDone()
         }
     }
@@ -91,7 +91,7 @@ class SessionEditViewModel(
     fun delete(onDone: () -> Unit) {
         val id = editingId ?: return
         viewModelScope.launch {
-            sessionDao.byId(id)?.session?.let { sessionDao.delete(it) }
+            sessionRepo.getSession(id)?.let { sessionRepo.delete(it) }
             onDone()
         }
     }
@@ -99,8 +99,8 @@ class SessionEditViewModel(
     companion object {
         val Factory = viewModelFactory {
             initializer {
-                val db = database()
-                SessionEditViewModel(db.sessionDao(), db.weaponDao(), db.ammunitionDao())
+                val repos = repositories()
+                SessionEditViewModel(repos.sessions, repos.weapons, repos.ammunition)
             }
         }
     }
