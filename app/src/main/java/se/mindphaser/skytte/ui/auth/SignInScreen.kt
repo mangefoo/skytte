@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,10 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.auth.AuthManager
+
+// Deep woodland green backdrop for the sign-in gate; warm off-white title for contrast.
+private val SignInBackground = Color(0xFF22301A)
+private val SignInTitle = Color(0xFFE9E5D8)
 
 /** Full-screen sign-in gate shown when no user is signed in. */
 @Composable
@@ -40,7 +45,10 @@ fun SignInScreen(authManager: AuthManager) {
     val signInNoAccount = stringResource(R.string.sign_in_no_account)
     var signingIn by remember { mutableStateOf(false) }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+    Scaffold(
+        containerColor = SignInBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -49,7 +57,11 @@ fun SignInScreen(authManager: AuthManager) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically)
         ) {
-            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
+            Text(
+                stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineMedium,
+                color = SignInTitle
+            )
             Image(
                 painter = painterResource(R.drawable.skytte_logo),
                 contentDescription = null,
