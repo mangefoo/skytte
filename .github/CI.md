@@ -1,18 +1,18 @@
-# CI: Release APK → Google Drive
+# CI: Release APK → Firebase App Distribution
 
 The [`Release APK`](workflows/release-apk.yml) workflow builds a **signed release APK** and
-uploads it to Google Drive. It runs on every push to `main` and can also be started manually
-from **Actions → Release APK → Run workflow**.
+distributes it via **Firebase App Distribution**. It runs on every push to `main` and can also
+be started manually from **Actions → Release APK → Run workflow**.
 
 What it does, in order:
 
 1. Builds with JDK 17 + Android SDK 36 and runs `./gradlew assembleRelease`.
 2. Signs the APK with your release keystore (provided via secrets).
 3. Attaches the APK to the run as a workflow artifact (`release-apk`).
-4. Uploads the APK to a Google Drive folder via a service account, named
-   `skytte-1.0-<run-number>-<short-sha>.apk`.
+4. Uploads the APK to Firebase App Distribution (via the Firebase CLI) and distributes it to your
+   tester group. Testers get an email and install through the Firebase *App Tester* app.
 
-The workflow does nothing useful until the secrets below exist.
+The workflow does nothing useful until the secrets/variables below exist.
 
 ---
 
@@ -38,14 +38,15 @@ Secrets (sensitive — masked in logs):
 | `RELEASE_KEYSTORE_BASE64` | Your release keystore, base64-encoded (see below) |
 | `RELEASE_KEYSTORE_PASSWORD` | The keystore (store) password |
 | `RELEASE_KEY_PASSWORD` | The key password (often the same as the store password) |
-| `GDRIVE_SA_KEY` | The Google service-account JSON key, pasted as-is |
-| `GDRIVE_FOLDER_ID` | The ID of the Drive folder to upload into |
+| `FIREBASE_SERVICE_ACCOUNT` | The Firebase service-account JSON key, pasted as-is |
 
 Variables (not sensitive — stored/displayed in plaintext):
 
 | Variable | What it is |
 | --- | --- |
 | `RELEASE_KEY_ALIAS` | The key alias inside the keystore (e.g. `skytte`) |
+| `FIREBASE_APP_ID` | The Firebase Android **App ID** (`1:NNN:android:XXX`) |
+| `FIREBASE_GROUPS` | The tester group alias to distribute to (e.g. `testers`) |
 
 ---
 
@@ -88,42 +89,34 @@ Set the other three secrets to match what you entered above:
 
 ---
 
-## 2. Create the Google service account
+## 2. Set up the Firebase app
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and create (or pick) a project.
-2. **APIs & Services → Library →** enable the **Google Drive API**.
-3. **APIs & Services → Credentials → Create credentials → Service account.** Give it a name
-   and create it (no roles needed).
-4. Open the new service account → **Keys → Add key → Create new key → JSON.** A `.json` file
-   downloads.
-5. Paste the **entire contents** of that JSON file into the `GDRIVE_SA_KEY` secret.
+1. At [console.firebase.google.com](https://console.firebase.google.com/) create (or choose) a
+   Firebase project.
+2. Add an **Android app** with package name `se.mindphaser.skytte`. You do **not** need to add
+   `google-services.json` or any SDK — distribution only needs the App ID.
+3. Copy the **App ID** from **Project settings → Your apps** (format `1:NNNNNN:android:XXXX`) and
+   put it in the `FIREBASE_APP_ID` variable.
 
-Note the service account's email address (looks like
-`name@project-id.iam.gserviceaccount.com`) — you need it in the next step.
+## 3. Enable App Distribution and a tester group
 
----
+1. **Release & Monitor → App Distribution → Get started.**
+2. Create a **tester group** (e.g. `testers`) and add your own email as a tester.
+3. Put the group's **alias** in the `FIREBASE_GROUPS` variable (e.g. `testers`).
 
-## 3. Choose the Drive folder and share it
+## 4. Create the Firebase service account
 
-1. In Google Drive, create (or pick) the destination folder.
-2. **Share** that folder with the service account's email, giving it **Editor** access.
-3. Open the folder and copy its ID from the URL — it's the part after `/folders/`:
-   `https://drive.google.com/drive/folders/`**`1AbCdEfGhIjKlMnOpQrStUvWxYz`**
-4. Put that ID into the `GDRIVE_FOLDER_ID` secret.
+The service account lives in the Google Cloud Console
+([console.cloud.google.com](https://console.cloud.google.com/), same project as Firebase) →
+**IAM & Admin → Service Accounts**.
 
-### ⚠️ Personal Gmail vs. Workspace
-
-A service account has **no storage quota on a personal (consumer) Google account**. If the
-folder lives in your personal *My Drive*, the upload can fail with
-`Service Accounts do not have storage quota`, because the uploaded file would be *owned* by
-the service account.
-
-This setup works reliably when the folder is in a **Shared Drive** (Google Workspace): create
-a Shared Drive, add the service account as a member, and use a folder inside it. The workflow
-already passes `supportsAllDrives=true`.
-
-If you only have a personal account and hit the quota error, switch the upload to **rclone**
-with a user OAuth token (uploads as you, owned by you) — ask and the workflow can be adjusted.
+1. Create a service account (or pick an existing one).
+2. Grant it the **Firebase App Distribution Admin** role.
+3. Open it in console.cloud.google.com Service Accounts → **Keys → Add key → Create new key 
+   → JSON**, then copy the downloaded file's entire
+   contents (the whole `{ … }` object — e.g. `pbcopy < key.json`) into the
+   `FIREBASE_SERVICE_ACCOUNT` secret. The workflow points the Firebase CLI at it via
+   `GOOGLE_APPLICATION_CREDENTIALS`. Treat the file as a credential and delete it afterwards.
 
 ---
 
@@ -132,8 +125,9 @@ with a user OAuth token (uploads as you, owned by you) — ask and the workflow 
 - **Automatic:** push to `main`.
 - **Manual:** Actions → **Release APK** → **Run workflow**.
 
-After a green run you'll find the APK both as the `release-apk` artifact on the run page and in
-your chosen Drive folder.
+After a green run the build appears in the Firebase console under **App Distribution**, your
+testers get an email/notification (install via the Firebase *App Tester* app), and the APK is
+also attached to the workflow run as the `release-apk` artifact.
 
 ## Local release build (optional)
 
