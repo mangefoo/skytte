@@ -16,6 +16,10 @@ If a change doesn't affect any doc, that's fine — but verify, don't assume.
 
 ## Commits
 
+**Never auto-commit.** Only `git commit`/`git push` when the user has explicitly asked for it in
+that request. Make and show changes in the working tree and let the user decide when to commit —
+don't commit "to be helpful", and don't bundle a commit into an unrelated task.
+
 Commit messages are **subject + body only**. Never add AI-attribution lines or any similar
 "AI additions" — no `Co-Authored-By:` trailers (e.g. naming Claude/an assistant), no
 "Generated with …" / "🤖" footers, no tool advertising. Write the message as a human would,
