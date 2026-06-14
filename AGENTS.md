@@ -43,6 +43,14 @@ If a change doesn't affect any doc, that's fine — but verify, don't assume.
   pull `databases/skytte.db` via `run-as`, edit with local `sqlite3`, `cp` it back via
   `run-as` (push through `/data/local/tmp` first), and clear `*-wal`/`*-shm`.
 
+## Versioning
+
+Set in `app/build.gradle.kts` from the build environment — don't hand-edit per build:
+- `versionCode` = `GITHUB_RUN_NUMBER` (monotonic in CI), or `1` locally.
+- `versionName` = `"<base> (<run>-<shortSha>)"`, e.g. `1.0 (42-abc1234)`; locally `1.0 (dev-<sha>)`.
+- Bump the `versionBase` constant by hand for real releases.
+- `BuildConfig.BUILD_DATE` (UTC) is shown with the version on the Settings "about" line.
+
 ## Architecture conventions
 
 - **Screens** live in `ui/<feature>/` as `XxxScreen.kt` + `XxxViewModel.kt`. ViewModels expose

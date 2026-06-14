@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import se.mindphaser.skytte.BuildConfig
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.SkytteApp
 import se.mindphaser.skytte.data.ImportResult
@@ -123,6 +124,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                 icon = Icons.Default.Download,
                 label = stringResource(R.string.import_data),
                 onClick = { importLauncher.launch(arrayOf("application/json")) }
+            )
+
+            Text(
+                text = stringResource(
+                    R.string.app_version,
+                    BuildConfig.VERSION_NAME,
+                    BuildConfig.BUILD_DATE
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
             )
         }
     }

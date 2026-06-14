@@ -1,3 +1,6 @@
+import java.time.LocalDate
+import java.time.ZoneOffset
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +8,18 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
 }
+
+// Build identity: versionCode from the CI run number (monotonic), versionName = semver +
+// "<run>-<shortSha>" so each build is traceable. Falls back to a local "dev" build off git.
+private val versionBase = "1.0"
+private val ciRunNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull()
+private val gitShortSha = (System.getenv("GITHUB_SHA")?.take(7))
+    ?: runCatching {
+        providers.exec { commandLine("git", "rev-parse", "--short=7", "HEAD") }
+            .standardOutput.asText.get().trim()
+    }.getOrNull()?.ifBlank { null } ?: "local"
+private val buildId = if (ciRunNumber != null) "$ciRunNumber-$gitShortSha" else "dev-$gitShortSha"
+private val buildDateUtc = LocalDate.now(ZoneOffset.UTC).toString()
 
 android {
     namespace = "se.mindphaser.skytte"
@@ -14,8 +29,9 @@ android {
         applicationId = "se.mindphaser.skytte"
         minSdk = 36
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = ciRunNumber ?: 1
+        versionName = "$versionBase ($buildId)"
+        buildConfigField("String", "BUILD_DATE", "\"$buildDateUtc\"")
     }
 
     signingConfigs {
@@ -53,6 +69,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

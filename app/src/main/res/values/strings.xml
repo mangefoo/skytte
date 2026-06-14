@@ -60,4 +60,5 @@
     <string name="import_data">Importera</string>
     <string name="import_failed">Importen misslyckades: %1$s</string>
     <string name="import_success">Import klar: %1$d vapen, %2$d ammunition, %3$d skjuttillfällen</string>
+    <string name="app_version">Version %1$s · byggd %2$s</string>
 </resources>
