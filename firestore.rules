@@ -3,16 +3,20 @@ rules_version = '2';
 // Access control. Two independent checks, both enforced server-side:
 //   1. A user may only touch their own subtree (/users/{uid}/…).
 //   2. The account must be on the allowlist — membership is data, not code: a document must exist
-//      at /allowlist/{uid}. Manage the allowlist in the Firebase console (or admin tooling); it is
-//      deliberately kept OUT of this repo so no personal data (emails/uids) is committed.
-// Anyone not on the allowlist can still sign in, but every read/write is denied (the app then
-// shows an "authorization failed" screen). exists()/get() in rules bypass the allow rules, so the
+//      at /allowlist/{email}, where {email} is the account's verified email. Manage the allowlist in
+//      the Firebase console (or admin tooling); it is deliberately kept OUT of this repo so no
+//      personal data (emails/uids) is ever committed.
+// Keying by email (not uid) means access survives deleting/recreating the auth user, and the list
+// is managed with values you actually know. email_verified guards against spoofed email claims.
+// Anyone not on the allowlist can still sign in, but every read/write is denied (the app then shows
+// an "authorization failed" screen). exists()/get() in rules bypass the allow rules, so the
 // allowlist collection needs no client access of its own.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isAllowed() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/allowlist/$(request.auth.uid));
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/allowlist/$(request.auth.token.email));
     }
 
     match /users/{uid}/{document=**} {
@@ -20,7 +24,7 @@ service cloud.firestore {
     }
 
     // Allowlist membership is managed out-of-band (console/admin). No client access.
-    match /allowlist/{uid} {
+    match /allowlist/{email} {
       allow read, write: if false;
     }
   }

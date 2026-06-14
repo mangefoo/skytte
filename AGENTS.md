@@ -74,12 +74,13 @@ Set in `app/build.gradle.kts` from the build environment — don't hand-edit per
   signed-in account isn't on the allowlist, a spinner while repositories build, then `SkytteAppRoot`.
   ViewModels never see the uid — they only touch repositories.
 - **Access allowlist:** only allowlisted accounts may use the app, enforced **solely** by
-  `firestore.rules`, which checks for a membership doc at `/allowlist/{uid}`. The allowlist is
+  `firestore.rules`, which checks for a membership doc at `/allowlist/{email}` (keyed by the
+  account's verified email, so access survives deleting/recreating the auth user). The allowlist is
   **data, not code** — managed in the Firebase console (or admin tooling) and deliberately kept out
   of this repo, so **no personal data (emails/uids) is ever committed**. Add/remove an account by
-  creating/deleting its `/allowlist/{uid}` doc — no app rebuild or rules change. The app keeps **no**
-  copy of the list: `SkytteApp.isAccessDenied()` probes one read and treats `PERMISSION_DENIED` as
-  "not allowed", which drives `NotAuthorizedScreen`.
+  creating/deleting its `/allowlist/{email}` doc — no app rebuild or rules change. The app keeps
+  **no** copy of the list: `SkytteApp.isAccessDenied()` probes one read and treats `PERMISSION_DENIED`
+  as "not allowed", which drives `NotAuthorizedScreen`.
 - **Shared top bar:** `ui/SkytteTopBar.kt` — tinted bar with title + a settings gear, used by
   every main tab. The root `Scaffold` in `ui/SkytteAppRoot.kt` sets `contentWindowInsets =
   WindowInsets(0)` + `consumeWindowInsets(padding)` so the per-screen top bars own the status-bar
