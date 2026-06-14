@@ -33,7 +33,9 @@ data class Session(
     val weaponId: Long?,
     val ammunitionId: Long?,
     val ammoCount: Int,
-    val shootingType: String
+    val shootingType: String,
+    val fee: Double? = null,
+    val feeIncludesAmmo: Boolean = false
 )
 
 data class SessionWithRefs(
@@ -43,3 +45,10 @@ data class SessionWithRefs(
     @Relation(parentColumn = "ammunitionId", entityColumn = "id")
     val ammunition: Ammunition?
 )
+
+/** Total cost of the session: the fee, plus ammunition cost unless the fee already includes it. */
+fun SessionWithRefs.totalCost(): Double {
+    val fee = session.fee ?: 0.0
+    if (session.feeIncludesAmmo) return fee
+    return fee + (ammunition?.costPerRound ?: 0.0) * session.ammoCount
+}

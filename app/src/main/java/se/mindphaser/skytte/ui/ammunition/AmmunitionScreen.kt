@@ -3,6 +3,7 @@
 package se.mindphaser.skytte.ui.ammunition
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,11 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.data.Ammunition
 import se.mindphaser.skytte.ui.SkytteTopBar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,9 +86,16 @@ fun AmmunitionScreen(
                     Card(modifier = Modifier.fillMaxWidth().clickable { editing = a }) {
                         Column(Modifier.padding(16.dp)) {
                             Text(a.name, style = MaterialTheme.typography.titleMedium)
+                            val priceText = a.costPerRound?.let {
+                                stringResource(
+                                    R.string.cost_per_round_unit,
+                                    String.format(Locale.forLanguageTag("sv-SE"), "%.2f", it)
+                                )
+                            }
                             val details = listOfNotNull(
                                 a.caliber.takeIf { it.isNotBlank() },
-                                a.notes.takeIf { it.isNotBlank() }
+                                a.notes.takeIf { it.isNotBlank() },
+                                priceText
                             ).joinToString(" · ")
                             if (details.isNotEmpty()) {
                                 Text(details, style = MaterialTheme.typography.bodySmall)
@@ -125,6 +135,9 @@ private fun AmmunitionEditDialog(
     var name by remember { mutableStateOf(initial.name) }
     var caliber by remember { mutableStateOf(initial.caliber) }
     var notes by remember { mutableStateOf(initial.notes) }
+    var cost by remember {
+        mutableStateOf(initial.costPerRound?.let { String.format(Locale.forLanguageTag("sv-SE"), "%.2f", it) } ?: "")
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -151,6 +164,18 @@ private fun AmmunitionEditDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
+                    value = cost,
+                    onValueChange = { new ->
+                        // Allow digits and a single decimal separator (comma or dot).
+                        val filtered = new.filter { it.isDigit() || it == ',' || it == '.' }
+                        if (filtered.count { it == ',' || it == '.' } <= 1) cost = filtered
+                    },
+                    label = { Text(stringResource(R.string.cost_per_round)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
                     label = { Text(stringResource(R.string.notes)) },
@@ -161,7 +186,14 @@ private fun AmmunitionEditDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onSave(initial.copy(name = name.trim(), caliber = caliber.trim(), notes = notes.trim()))
+                    onSave(
+                        initial.copy(
+                            name = name.trim(),
+                            caliber = caliber.trim(),
+                            notes = notes.trim(),
+                            costPerRound = cost.replace(',', '.').toDoubleOrNull()
+                        )
+                    )
                 },
                 enabled = name.isNotBlank()
             ) { Text(stringResource(R.string.save)) }

@@ -9,6 +9,7 @@
     <string name="tab_dashboard">Statistik</string>
 
     <string name="stat_shots_title">Antal skott</string>
+    <string name="stat_cost_title">Kostnad</string>
     <string name="stat_total">Totalt</string>
     <string name="stat_this_year">I år</string>
     <string name="stat_last_30_days">30 dagar</string>
@@ -17,6 +18,7 @@
     <string name="shots_per_ammo">Skott per ammunition</string>
     <string name="shots_per_month">Skott</string>
     <string name="sessions_per_month">Skjuttillfällen</string>
+    <string name="cost_per_month">Kostnad (kr)</string>
     <string name="unknown_label">Okänt</string>
     <string name="empty_dashboard">Ingen statistik ännu. Lägg till skjuttillfällen för att se data.</string>
 
@@ -35,10 +37,14 @@
     <string name="weapon">Vapen</string>
     <string name="ammunition">Ammunition</string>
     <string name="ammo_count">Antal skott</string>
+    <string name="fee">Avgift</string>
+    <string name="fee_includes_ammo">Avgiften inkluderar ammunition</string>
     <string name="shooting_type">Typ av skytte</string>
     <string name="name">Namn</string>
     <string name="caliber">Kaliber</string>
     <string name="notes">Anteckningar</string>
+    <string name="cost_per_round">Pris per skott</string>
+    <string name="cost_per_round_unit">%1$s kr/skott</string>
 
     <string name="save">Spara</string>
     <string name="cancel">Avbryt</string>

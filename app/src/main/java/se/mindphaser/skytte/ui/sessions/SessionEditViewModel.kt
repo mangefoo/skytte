@@ -32,10 +32,12 @@ class SessionEditViewModel(
     var ammunitionId: Long? by mutableStateOf(null)
     var ammoCountText by mutableStateOf("")
     var shootingType by mutableStateOf("")
+    var feeText by mutableStateOf("")
+    var feeIncludesAmmo by mutableStateOf(false)
     var loaded by mutableStateOf(false)
         private set
 
-    private var editingId: Long? = null
+    private var editingId: Long? by mutableStateOf(null)
 
     val weapons: StateFlow<List<Weapon>> =
         weaponDao.observeAll().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -57,6 +59,10 @@ class SessionEditViewModel(
                 ammunitionId = s.session.ammunitionId
                 ammoCountText = s.session.ammoCount.toString()
                 shootingType = s.session.shootingType
+                feeText = s.session.fee?.let {
+                    String.format(java.util.Locale.forLanguageTag("sv-SE"), "%.2f", it)
+                } ?: ""
+                feeIncludesAmmo = s.session.feeIncludesAmmo
             }
             loaded = true
         }
@@ -73,7 +79,9 @@ class SessionEditViewModel(
                 weaponId = weaponId,
                 ammunitionId = ammunitionId,
                 ammoCount = ammoCountText.toIntOrNull() ?: 0,
-                shootingType = shootingType.trim()
+                shootingType = shootingType.trim(),
+                fee = feeText.replace(',', '.').toDoubleOrNull(),
+                feeIncludesAmmo = feeIncludesAmmo
             )
             if (editingId == null) sessionDao.insert(s) else sessionDao.update(s)
             onDone()

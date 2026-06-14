@@ -8,5 +8,6 @@ data class Ammunition(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val caliber: String = "",
-    val notes: String = ""
+    val notes: String = "",
+    val costPerRound: Double? = null
 )

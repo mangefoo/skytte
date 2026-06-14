@@ -2,6 +2,7 @@
 
 package se.mindphaser.skytte.ui.sessions
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -38,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -153,6 +156,31 @@ fun SessionEditScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            OutlinedTextField(
+                value = vm.feeText,
+                onValueChange = { new ->
+                    val filtered = new.filter { it.isDigit() || it == ',' || it == '.' }
+                    if (filtered.count { it == ',' || it == '.' } <= 1) vm.feeText = filtered
+                },
+                label = { Text(stringResource(R.string.fee)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { vm.feeIncludesAmmo = !vm.feeIncludesAmmo },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = vm.feeIncludesAmmo,
+                    onCheckedChange = { vm.feeIncludesAmmo = it }
+                )
+                Text(stringResource(R.string.fee_includes_ammo))
+            }
 
             SuggestionDropdown(
                 label = stringResource(R.string.shooting_type),

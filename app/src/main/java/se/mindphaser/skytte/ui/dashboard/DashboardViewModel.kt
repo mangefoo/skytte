@@ -7,9 +7,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import se.mindphaser.skytte.data.SessionDao
 import se.mindphaser.skytte.data.SessionWithRefs
+import se.mindphaser.skytte.data.totalCost
 import se.mindphaser.skytte.ui.database
 import java.time.LocalDate
 import java.time.YearMonth
+import kotlin.math.roundToInt
 
 /** [label] is null when the session had no weapon/ammo set; the UI substitutes a localized label. */
 data class LabeledCount(val label: String?, val shots: Int)
@@ -21,24 +23,32 @@ data class DashboardStats(
     val totalShots: Int,
     val shotsThisYear: Int,
     val shotsLast30Days: Int,
+    val totalCost: Double,
+    val costThisYear: Double,
+    val costLast30Days: Double,
     val totalSessions: Int,
     val sessionsThisYear: Int,
     val shotsPerWeapon: List<LabeledCount>,
     val shotsPerAmmo: List<LabeledCount>,
     val monthlyShots: List<MonthBucket>,
-    val monthlySessions: List<MonthBucket>
+    val monthlySessions: List<MonthBucket>,
+    val monthlyCost: List<MonthBucket>
 ) {
     companion object {
         val EMPTY = DashboardStats(
             totalShots = 0,
             shotsThisYear = 0,
             shotsLast30Days = 0,
+            totalCost = 0.0,
+            costThisYear = 0.0,
+            costLast30Days = 0.0,
             totalSessions = 0,
             sessionsThisYear = 0,
             shotsPerWeapon = emptyList(),
             shotsPerAmmo = emptyList(),
             monthlyShots = emptyList(),
-            monthlySessions = emptyList()
+            monthlySessions = emptyList(),
+            monthlyCost = emptyList()
         )
     }
 }
@@ -79,6 +89,9 @@ class DashboardViewModel(dao: SessionDao) : ViewModel() {
             val sessionBuckets = months.map { month ->
                 MonthBucket(month, byMonth[month]?.size ?: 0)
             }
+            val costBuckets = months.map { month ->
+                MonthBucket(month, (byMonth[month]?.sumOf { it.totalCost() } ?: 0.0).roundToInt())
+            }
 
             return DashboardStats(
                 totalShots = sessions.sumOf { it.session.ammoCount },
@@ -87,12 +100,19 @@ class DashboardViewModel(dao: SessionDao) : ViewModel() {
                 shotsLast30Days = sessions
                     .filter { !it.session.date.isBefore(last30DaysStart) && !it.session.date.isAfter(today) }
                     .sumOf { it.session.ammoCount },
+                totalCost = sessions.sumOf { it.totalCost() },
+                costThisYear = sessions.filter { it.session.date.year == today.year }
+                    .sumOf { it.totalCost() },
+                costLast30Days = sessions
+                    .filter { !it.session.date.isBefore(last30DaysStart) && !it.session.date.isAfter(today) }
+                    .sumOf { it.totalCost() },
                 totalSessions = sessions.size,
                 sessionsThisYear = sessions.count { it.session.date.year == today.year },
                 shotsPerWeapon = perWeapon.toLabeledCounts(),
                 shotsPerAmmo = perAmmo.toLabeledCounts(),
                 monthlyShots = shotBuckets,
-                monthlySessions = sessionBuckets
+                monthlySessions = sessionBuckets,
+                monthlyCost = costBuckets
             )
         }
 

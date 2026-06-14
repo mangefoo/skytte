@@ -87,6 +87,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             SummarySection(stats)
+            CostSection(stats)
             MonthlyChartCard(
                 title = stringResource(R.string.sessions_per_month),
                 buckets = stats.monthlySessions
@@ -94,6 +95,10 @@ fun DashboardScreen(
             MonthlyChartCard(
                 title = stringResource(R.string.shots_per_month),
                 buckets = stats.monthlyShots
+            )
+            MonthlyChartCard(
+                title = stringResource(R.string.cost_per_month),
+                buckets = stats.monthlyCost
             )
             BreakdownCard(
                 title = stringResource(R.string.shots_per_weapon),
@@ -137,7 +142,39 @@ private fun SummarySection(stats: DashboardStats) {
 }
 
 @Composable
-private fun StatTile(value: Int, label: String, modifier: Modifier = Modifier) {
+private fun CostSection(stats: DashboardStats) {
+    fun kr(amount: Double) = String.format(Locale.forLanguageTag("sv-SE"), "%.0f kr", amount)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.stat_cost_title),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatTile(
+                valueText = kr(stats.totalCost),
+                label = stringResource(R.string.stat_total),
+                modifier = Modifier.weight(1f)
+            )
+            StatTile(
+                valueText = kr(stats.costThisYear),
+                label = stringResource(R.string.stat_this_year),
+                modifier = Modifier.weight(1f)
+            )
+            StatTile(
+                valueText = kr(stats.costLast30Days),
+                label = stringResource(R.string.stat_last_30_days),
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatTile(value: Int, label: String, modifier: Modifier = Modifier) =
+    StatTile(valueText = value.toString(), label = label, modifier = modifier)
+
+@Composable
+private fun StatTile(valueText: String, label: String, modifier: Modifier = Modifier) {
     Card(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -147,7 +184,7 @@ private fun StatTile(value: Int, label: String, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = value.toString(),
+                text = valueText,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

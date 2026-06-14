@@ -40,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import se.mindphaser.skytte.R
 import se.mindphaser.skytte.data.SessionWithRefs
+import se.mindphaser.skytte.data.totalCost
 import se.mindphaser.skytte.data.exportBackup
 import se.mindphaser.skytte.data.shareBackup
 import se.mindphaser.skytte.ui.SkytteTopBar
@@ -148,6 +149,11 @@ private fun SessionCard(item: SessionWithRefs, onClick: () -> Unit) {
                 if (item.session.ammoCount > 0) {
                     if (isNotEmpty()) append(" · ")
                     append("${item.session.ammoCount} skott")
+                }
+                val cost = item.totalCost()
+                if (cost > 0) {
+                    if (isNotEmpty()) append(" · ")
+                    append(String.format(Locale.forLanguageTag("sv-SE"), "%.2f kr", cost))
                 }
             }
             if (details.isNotEmpty()) {
