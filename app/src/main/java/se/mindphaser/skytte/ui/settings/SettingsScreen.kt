@@ -95,6 +95,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            SettingsSectionHeader(stringResource(R.string.settings_section_appearance))
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -111,6 +113,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                     onCheckedChange = { themePreferences.setDarkMode(it) }
                 )
             }
+
+            SettingsSectionHeader(stringResource(R.string.settings_section_data))
 
             SettingsActionRow(
                 icon = Icons.Default.Upload,
@@ -130,6 +134,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 onClick = { importLauncher.launch(arrayOf("application/json")) }
             )
 
+            SettingsSectionHeader(stringResource(R.string.settings_section_about))
+
             SettingsActionRow(
                 icon = Icons.AutoMirrored.Filled.Logout,
                 label = stringResource(R.string.sign_out),
@@ -148,6 +154,16 @@ fun SettingsScreen(onBack: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun SettingsSectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp)
+    )
 }
 
 @Composable

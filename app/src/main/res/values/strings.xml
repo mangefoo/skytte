@@ -22,6 +22,9 @@
     <string name="unknown_label">Okänt</string>
     <string name="empty_dashboard">Ingen statistik ännu. Lägg till skjuttillfällen för att se data.</string>
 
+    <string name="settings_section_appearance">Utseende</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_section_about">Om Skytte</string>
     <string name="dark_mode">Mörkt läge</string>
 
     <string name="add_session">Nytt skjuttillfälle</string>

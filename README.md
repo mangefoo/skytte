@@ -15,7 +15,9 @@ and ammunition. The UI is in Swedish.
   with Google on first launch; sign out from **Inställningar** (Settings).
 - **Export & import** — back up all data (sessions, weapons, ammunition) to a JSON
   file via the system share sheet, and import a backup JSON (e.g. from Downloads)
-  to merge it back in. Both live on the **Inställningar** (Settings) screen.
+  to merge it back in. Both live on the **Inställningar** (Settings) screen, which
+  is organized into **Utseende** (appearance), **Data**, and **Om Skytte** (about)
+  sections.
 
 ## Tech stack
 
