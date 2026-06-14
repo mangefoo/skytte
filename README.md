@@ -9,9 +9,9 @@ and ammunition. The UI is in Swedish.
   ammunition, round count, and shooting type.
 - **Vapen (Weapons)** — maintain a list of weapons (name, caliber, notes).
 - **Ammunition** — maintain a list of ammunition (name, caliber, notes).
-- **Export** — share a full JSON backup of all data (sessions, weapons,
-  ammunition) via the system share sheet, e.g. attach it to an email. The Share
-  icon lives in the top bar of the Sessions screen.
+- **Export & import** — back up all data (sessions, weapons, ammunition) to a JSON
+  file via the system share sheet, and import a backup JSON (e.g. from Downloads)
+  to merge it back in. Both live on the **Inställningar** (Settings) screen.
 
 ## Tech stack
 
@@ -20,7 +20,7 @@ and ammunition. The UI is in Swedish.
 - **Navigation:** Navigation Compose
 - **Persistence:** Room (SQLite), database file `skytte.db`
 - **Architecture:** MVVM (ViewModel + Kotlin Flow)
-- **Serialization:** kotlinx.serialization (JSON export)
+- **Serialization:** kotlinx.serialization (JSON export/import)
 - **Build:** Gradle 8.13 with Android Gradle Plugin 8.13.2
 
 ## Requirements
@@ -71,15 +71,16 @@ command line with `./gradlew :app:installDebug`.
 app/src/main/java/se/mindphaser/skytte/
 ├── MainActivity.kt          # Entry point
 ├── SkytteApp.kt             # Application class (holds the database)
-├── data/                    # Room entities, DAOs, database, JSON backup/export
+├── data/                    # Room entities, DAOs, database, JSON backup/export/import
 │   ├── AppDatabase.kt
 │   ├── Session.kt / Weapon.kt / Ammunition.kt
 │   ├── SessionDao.kt / WeaponDao.kt / AmmunitionDao.kt
-│   ├── Backup.kt            # Serializable export DTOs
-│   └── BackupExporter.kt    # Builds JSON, writes file, shares via FileProvider
+│   ├── Backup.kt            # Serializable backup DTOs (+ entity mappers)
+│   ├── BackupExporter.kt    # Builds JSON, writes file, shares via FileProvider
+│   └── BackupImporter.kt    # Reads a backup JSON and merges it into the database
 └── ui/                      # Jetpack Compose screens + ViewModels
     ├── SkytteAppRoot.kt     # Bottom-nav + navigation graph
-    ├── sessions/ weapons/ ammunition/
+    ├── dashboard/ sessions/ weapons/ ammunition/ settings/
     └── theme/
 ```
 

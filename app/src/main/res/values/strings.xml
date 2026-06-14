@@ -57,4 +57,7 @@
     <string name="export">Exportera</string>
     <string name="export_share">Dela export</string>
     <string name="export_failed">Exporten misslyckades</string>
+    <string name="import_data">Importera</string>
+    <string name="import_failed">Importen misslyckades: %1$s</string>
+    <string name="import_success">Import klar: %1$d vapen, %2$d ammunition, %3$d skjuttillfällen</string>
 </resources>

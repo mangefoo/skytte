@@ -14,7 +14,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-private val json = Json { prettyPrint = true }
+private val json = Json {
+    prettyPrint = true
+    encodeDefaults = true // keep every field (incl. version + null cost fields) in the snapshot
+}
 private val fileStampFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
 
 /**

@@ -1,6 +1,7 @@
 package se.mindphaser.skytte.data
 
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 /**
  * Serializable snapshot of all app data. [LocalDate] values are rendered as
@@ -9,7 +10,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class BackupData(
-    val version: Int = 1,
+    val version: Int = 2,
     val exportedAt: String,
     val weapons: List<WeaponDto>,
     val ammunition: List<AmmunitionDto>,
@@ -26,6 +27,8 @@ data class WeaponDto(
     companion object {
         fun from(weapon: Weapon) = WeaponDto(weapon.id, weapon.name, weapon.caliber, weapon.notes)
     }
+
+    fun toEntity() = Weapon(id = id, name = name, caliber = caliber, notes = notes)
 }
 
 @Serializable
@@ -34,10 +37,16 @@ data class AmmunitionDto(
     val name: String,
     val caliber: String,
     val notes: String,
+    val costPerRound: Double? = null,
 ) {
     companion object {
-        fun from(ammo: Ammunition) = AmmunitionDto(ammo.id, ammo.name, ammo.caliber, ammo.notes)
+        fun from(ammo: Ammunition) =
+            AmmunitionDto(ammo.id, ammo.name, ammo.caliber, ammo.notes, ammo.costPerRound)
     }
+
+    fun toEntity() = Ammunition(
+        id = id, name = name, caliber = caliber, notes = notes, costPerRound = costPerRound
+    )
 }
 
 @Serializable
@@ -49,6 +58,8 @@ data class SessionDto(
     val ammunitionId: Long?,
     val ammoCount: Int,
     val shootingType: String,
+    val fee: Double? = null,
+    val feeIncludesAmmo: Boolean = false,
 ) {
     companion object {
         fun from(session: Session) = SessionDto(
@@ -59,6 +70,20 @@ data class SessionDto(
             ammunitionId = session.ammunitionId,
             ammoCount = session.ammoCount,
             shootingType = session.shootingType,
+            fee = session.fee,
+            feeIncludesAmmo = session.feeIncludesAmmo,
         )
     }
+
+    fun toEntity() = Session(
+        id = id,
+        date = LocalDate.parse(date),
+        location = location,
+        weaponId = weaponId,
+        ammunitionId = ammunitionId,
+        ammoCount = ammoCount,
+        shootingType = shootingType,
+        fee = fee,
+        feeIncludesAmmo = feeIncludesAmmo,
+    )
 }
