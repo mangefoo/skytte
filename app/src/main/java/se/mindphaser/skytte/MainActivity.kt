@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import se.mindphaser.skytte.ui.SkytteAppRoot
+import se.mindphaser.skytte.ui.auth.NotAuthorizedScreen
 import se.mindphaser.skytte.ui.auth.SignInScreen
 import se.mindphaser.skytte.ui.theme.SkytteTheme
 
@@ -39,9 +40,11 @@ class MainActivity : ComponentActivity() {
                 // Auth gate: the app is only shown once a user is signed in and their repositories
                 // are ready. Signed out → sign-in screen; signing in → brief loading spinner.
                 val uid by app.authManager.uid.collectAsState()
+                val accessDenied by app.accessDenied.collectAsState()
                 val repositories by app.repositories.collectAsState()
                 when {
                     repositories != null -> SkytteAppRoot()
+                    uid != null && accessDenied -> NotAuthorizedScreen(onSignOut = { app.authManager.signOut() })
                     uid != null -> Surface(modifier = Modifier.fillMaxSize()) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator()

@@ -1,12 +1,27 @@
 rules_version = '2';
 
-// Each signed-in user can read and write only their own subtree (/users/{uid}/…). No cross-user
-// access. This is the real security boundary — the client paths use the uid, but the rules enforce
-// it independently.
+// Access control. Two independent checks, both enforced server-side:
+//   1. A user may only touch their own subtree (/users/{uid}/…).
+//   2. The account must be on the allowlist — membership is data, not code: a document must exist
+//      at /allowlist/{uid}. Manage the allowlist in the Firebase console (or admin tooling); it is
+//      deliberately kept OUT of this repo so no personal data (emails/uids) is committed.
+// Anyone not on the allowlist can still sign in, but every read/write is denied (the app then
+// shows an "authorization failed" screen). exists()/get() in rules bypass the allow rules, so the
+// allowlist collection needs no client access of its own.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAllowed() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/allowlist/$(request.auth.uid));
+    }
+
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if isAllowed() && request.auth.uid == uid;
+    }
+
+    // Allowlist membership is managed out-of-band (console/admin). No client access.
+    match /allowlist/{uid} {
+      allow read, write: if false;
     }
   }
 }

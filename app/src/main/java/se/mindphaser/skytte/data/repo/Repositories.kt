@@ -1,5 +1,6 @@
 package se.mindphaser.skytte.data.repo
 
+import android.util.Log
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -34,7 +35,10 @@ private fun <T> CollectionReference.observe(map: (DocumentSnapshot) -> T?): Flow
     callbackFlow {
         val registration = addSnapshotListener { snapshot, error ->
             if (error != null) {
-                close(error)
+                // Don't crash the app on a listener error (e.g. PERMISSION_DENIED, transient
+                // rejections). Log it and complete the flow normally; collectors keep their last value.
+                Log.w("Repositories", "Snapshot listener error for ${this@observe.path}", error)
+                close()
                 return@addSnapshotListener
             }
             if (snapshot != null) trySend(snapshot.documents.mapNotNull(map))

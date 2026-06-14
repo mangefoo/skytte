@@ -70,8 +70,13 @@ Set in `app/build.gradle.kts` from the build environment — don't hand-edit per
   completes on server ack, so never `.await()` a write (it would hang offline). Entity ids are
   Firestore document ids (`String`); a blank id means "not yet persisted". `SessionWithRefs` is
   joined in-memory by `combine`-ing the sessions/weapons/ammo flows (Firestore has no joins).
-- **Auth gate:** `MainActivity` shows `SignInScreen` when signed out, a spinner while repositories
-  build, then `SkytteAppRoot`. ViewModels never see the uid — they only touch repositories.
+- **Auth gate:** `MainActivity` shows `SignInScreen` when signed out, `NotAuthorizedScreen` when the
+  signed-in account isn't on the allowlist, a spinner while repositories build, then `SkytteAppRoot`.
+  ViewModels never see the uid — they only touch repositories.
+- **Access allowlist:** only allowlisted Google accounts may use the app, enforced **solely** by the
+  email allowlist in `firestore.rules` (the single source of truth — edit access there, no app
+  rebuild needed). The app keeps **no** copy of the list: `SkytteApp.isAccessDenied()` probes one
+  read and treats a `PERMISSION_DENIED` as "not allowed", which drives `NotAuthorizedScreen`.
 - **Shared top bar:** `ui/SkytteTopBar.kt` — tinted bar with title + a settings gear, used by
   every main tab. The root `Scaffold` in `ui/SkytteAppRoot.kt` sets `contentWindowInsets =
   WindowInsets(0)` + `consumeWindowInsets(padding)` so the per-screen top bars own the status-bar
@@ -99,5 +104,8 @@ client depends on it). One-time import of legacy on-device data lives in
 `data/Backup.kt` holds versioned DTOs with a `from()` entity→DTO mapper (current `version = 3`;
 ids are `String`). The export `Json` uses `encodeDefaults = true` so every field (incl. nulls) is
 written. New entity fields **must** be added to the matching DTO + `from()` + the importer, or they
-won't round-trip. Import (`BackupImporter.kt`) is a **merge that assigns fresh ids** and remaps
-session→weapon/ammo references, so importing never clobbers existing docs; nothing is deleted.
+won't round-trip. Import (`BackupImporter.kt`) reuses each entry's id as the document id, so it is an
+**idempotent upsert** — re-importing the same file overwrites rather than duplicating (matching the
+old Room REPLACE behavior). It tolerates both v2 (numeric) and v3 (string) ids; nothing is deleted.
+`LegacyDbMigration` uses the same id-preserving scheme, so migrating then restoring a backup of the
+same data won't create duplicates.

@@ -14,9 +14,13 @@ import java.time.LocalDate
  * One-time import of pre-cloud local data into the signed-in user's Firestore subtree.
  *
  * Older installs stored everything in a Room/SQLite database (`skytte.db`) keyed by Long ids. We
- * read that file directly (read-only) once per user, assign fresh Firestore document ids, and remap
- * each session's weapon/ammunition references to the new ids. Guarded by a per-uid SharedPreferences
- * flag so it never runs twice. Firestore writes are queued offline-first and sync in the background.
+ * read that file directly (read-only) once per user and write each row to Firestore, **reusing the
+ * old Long id (as a string) as the document id**. Keeping the ids stable means session references
+ * carry over unchanged, and it matches the id-preserving scheme used by the JSON importer — so
+ * migrating and later restoring a backup of the same data are both idempotent (no duplicates).
+ *
+ * Guarded by a per-uid SharedPreferences flag so it never runs twice. Firestore writes are queued
+ * offline-first and sync in the background.
  */
 object LegacyDbMigration {
 
@@ -34,35 +38,9 @@ object LegacyDbMigration {
         runCatching {
             withContext(Dispatchers.IO) {
                 SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-                    val weaponIdMap = HashMap<Long, String>()
-                    readWeapons(db).forEach { (oldId, weapon) ->
-                        val newId = repos.weapons.newId()
-                        repos.weapons.save(weapon.copy(id = newId))
-                        weaponIdMap[oldId] = newId
-                    }
-
-                    val ammoIdMap = HashMap<Long, String>()
-                    readAmmunition(db).forEach { (oldId, ammo) ->
-                        val newId = repos.ammunition.newId()
-                        repos.ammunition.save(ammo.copy(id = newId))
-                        ammoIdMap[oldId] = newId
-                    }
-
-                    readSessions(db).forEach { row ->
-                        repos.sessions.save(
-                            Session(
-                                id = repos.sessions.newId(),
-                                date = row.date,
-                                location = row.location,
-                                weaponId = row.oldWeaponId?.let(weaponIdMap::get),
-                                ammunitionId = row.oldAmmoId?.let(ammoIdMap::get),
-                                ammoCount = row.ammoCount,
-                                shootingType = row.shootingType,
-                                fee = row.fee,
-                                feeIncludesAmmo = row.feeIncludesAmmo,
-                            )
-                        )
-                    }
+                    readWeapons(db).forEach { repos.weapons.save(it) }
+                    readAmmunition(db).forEach { repos.ammunition.save(it) }
+                    readSessions(db).forEach { repos.sessions.save(it) }
                 }
             }
         }
@@ -71,12 +49,13 @@ object LegacyDbMigration {
         prefs.edit().putBoolean(doneKey, true).apply()
     }
 
-    private fun readWeapons(db: SQLiteDatabase): List<Pair<Long, Weapon>> =
+    private fun readWeapons(db: SQLiteDatabase): List<Weapon> =
         db.rawQuery("SELECT id, name, caliber, notes FROM weapons", null).use { c ->
             buildList {
                 while (c.moveToNext()) {
                     add(
-                        c.getLong(0) to Weapon(
+                        Weapon(
+                            id = c.getLong(0).toString(),
                             name = c.getString(1) ?: "",
                             caliber = c.getString(2) ?: "",
                             notes = c.getString(3) ?: "",
@@ -86,12 +65,13 @@ object LegacyDbMigration {
             }
         }
 
-    private fun readAmmunition(db: SQLiteDatabase): List<Pair<Long, Ammunition>> =
+    private fun readAmmunition(db: SQLiteDatabase): List<Ammunition> =
         db.rawQuery("SELECT id, name, caliber, notes, costPerRound FROM ammunition", null).use { c ->
             buildList {
                 while (c.moveToNext()) {
                     add(
-                        c.getLong(0) to Ammunition(
+                        Ammunition(
+                            id = c.getLong(0).toString(),
                             name = c.getString(1) ?: "",
                             caliber = c.getString(2) ?: "",
                             notes = c.getString(3) ?: "",
@@ -102,37 +82,27 @@ object LegacyDbMigration {
             }
         }
 
-    private fun readSessions(db: SQLiteDatabase): List<LegacySessionRow> =
+    private fun readSessions(db: SQLiteDatabase): List<Session> =
         db.rawQuery(
-            "SELECT date, location, weaponId, ammunitionId, ammoCount, shootingType, fee, feeIncludesAmmo FROM sessions",
+            "SELECT id, date, location, weaponId, ammunitionId, ammoCount, shootingType, fee, feeIncludesAmmo FROM sessions",
             null
         ).use { c ->
             buildList {
                 while (c.moveToNext()) {
                     add(
-                        LegacySessionRow(
-                            date = LocalDate.ofEpochDay(c.getLong(0)),
-                            location = c.getString(1) ?: "",
-                            oldWeaponId = if (c.isNull(2)) null else c.getLong(2),
-                            oldAmmoId = if (c.isNull(3)) null else c.getLong(3),
-                            ammoCount = c.getInt(4),
-                            shootingType = c.getString(5) ?: "",
-                            fee = if (c.isNull(6)) null else c.getDouble(6),
-                            feeIncludesAmmo = c.getInt(7) != 0,
+                        Session(
+                            id = c.getLong(0).toString(),
+                            date = LocalDate.ofEpochDay(c.getLong(1)),
+                            location = c.getString(2) ?: "",
+                            weaponId = if (c.isNull(3)) null else c.getLong(3).toString(),
+                            ammunitionId = if (c.isNull(4)) null else c.getLong(4).toString(),
+                            ammoCount = c.getInt(5),
+                            shootingType = c.getString(6) ?: "",
+                            fee = if (c.isNull(7)) null else c.getDouble(7),
+                            feeIncludesAmmo = c.getInt(8) != 0,
                         )
                     )
                 }
             }
         }
-
-    private data class LegacySessionRow(
-        val date: LocalDate,
-        val location: String,
-        val oldWeaponId: Long?,
-        val oldAmmoId: Long?,
-        val ammoCount: Int,
-        val shootingType: String,
-        val fee: Double?,
-        val feeIncludesAmmo: Boolean,
-    )
 }

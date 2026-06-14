@@ -5,8 +5,9 @@ import kotlinx.serialization.Serializable
 /**
  * Serializable snapshot of all app data. [LocalDate] values are rendered as ISO-8601 strings so the
  * JSON stays human-readable and library-independent. Ids are Firestore document ids; foreign-key
- * ids are preserved so the file is a full backup, not just a report. (On import, fresh ids are
- * generated and references remapped, so the file is merged rather than clobbering existing docs.)
+ * ids are preserved so the file is a full backup, not just a report. (On import, each entry's id is
+ * reused as the document id, so importing is an idempotent upsert — re-importing the same file
+ * overwrites rather than duplicating.)
  */
 @Serializable
 data class BackupData(

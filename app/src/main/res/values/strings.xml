@@ -67,4 +67,6 @@
     <string name="sign_in_failed">Inloggningen misslyckades</string>
     <string name="sign_in_no_account">Inget Google-konto hittades på enheten. Lägg till ett konto i Inställningar och försök igen.</string>
     <string name="sign_out">Logga ut</string>
+    <string name="not_authorized_title">Behörighet saknas</string>
+    <string name="not_authorized_message">Det här kontot har inte behörighet att använda appen. Logga ut och logga in med ett behörigt konto.</string>
 </resources>
