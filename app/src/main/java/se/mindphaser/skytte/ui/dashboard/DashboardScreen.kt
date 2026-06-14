@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -144,6 +145,16 @@ private fun SummarySection(stats: DashboardStats) {
 @Composable
 private fun CostSection(stats: DashboardStats) {
     fun kr(amount: Double) = String.format(Locale.forLanguageTag("sv-SE"), "%.0f kr", amount)
+    val total = kr(stats.totalCost)
+    val thisYear = kr(stats.costThisYear)
+    val last30 = kr(stats.costLast30Days)
+    // Size the whole row by its longest value so the three tiles stay consistent and fit.
+    val maxDigits = listOf(total, thisYear, last30).maxOf { t -> t.count { it.isDigit() } }
+    val valueStyle = when {
+        maxDigits <= 3 -> MaterialTheme.typography.headlineMedium
+        maxDigits == 4 -> MaterialTheme.typography.titleLarge
+        else -> MaterialTheme.typography.titleMedium
+    }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.stat_cost_title),
@@ -151,19 +162,22 @@ private fun CostSection(stats: DashboardStats) {
         )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatTile(
-                valueText = kr(stats.totalCost),
+                valueText = total,
                 label = stringResource(R.string.stat_total),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                valueStyle = valueStyle
             )
             StatTile(
-                valueText = kr(stats.costThisYear),
+                valueText = thisYear,
                 label = stringResource(R.string.stat_this_year),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                valueStyle = valueStyle
             )
             StatTile(
-                valueText = kr(stats.costLast30Days),
+                valueText = last30,
                 label = stringResource(R.string.stat_last_30_days),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                valueStyle = valueStyle
             )
         }
     }
@@ -174,7 +188,12 @@ private fun StatTile(value: Int, label: String, modifier: Modifier = Modifier) =
     StatTile(valueText = value.toString(), label = label, modifier = modifier)
 
 @Composable
-private fun StatTile(valueText: String, label: String, modifier: Modifier = Modifier) {
+private fun StatTile(
+    valueText: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    valueStyle: TextStyle = MaterialTheme.typography.headlineMedium
+) {
     Card(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -185,9 +204,10 @@ private fun StatTile(valueText: String, label: String, modifier: Modifier = Modi
         ) {
             Text(
                 text = valueText,
-                style = MaterialTheme.typography.headlineMedium,
+                style = valueStyle,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1
             )
             Text(
                 text = label,
